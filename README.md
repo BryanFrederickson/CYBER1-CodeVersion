@@ -7,11 +7,11 @@ CYBER1-CodeVersion
 
 ### One-sentence description of the project
 
-TODO: A 20-second elevator pitch of your project - its core idea summarized in one sentence.
+Develop a tool to generate unique permutations of a given C/C++ or Python source code file, where the outputs function the same as the original.
 
 ### Additional information about the project
 
-TODO: Write a compelling/creative/informative project description / summary
+This project is meant to help signature-based intrusion detection by being able to generate semantic copies of known code, to better identify malicious software that has been changed to avoid detection.
 
 ## Installation
 
