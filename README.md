@@ -3,6 +3,8 @@
 # Project Name
 CYBER1-CodeVersion
 
+Developers: Bryan Frederickson, Samantha Brewer (KleinMandolin)
+
 ## Project summary
 
 ### One-sentence description of the project
