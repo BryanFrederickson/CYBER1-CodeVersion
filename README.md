@@ -57,8 +57,7 @@ TODO: Leave the steps below if you want others to contribute to your project.
 
 Sprint 1 Deliverables:
   * [Sprint 1 Report](./Sprint%201/)
-  * [Sprint 1 Video](./Sprint%201/)
-
+  * [Sprint 1 Video](https://youtu.be/1v400lVrzvU)
 ## License
 
 [License](./LICENSE)
