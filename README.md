@@ -55,11 +55,10 @@ TODO: Leave the steps below if you want others to contribute to your project.
 
 ## Additional Documentation
 
-TODO: Provide links to additional documentation that may exist in the repo, e.g.,
-  * Sprint reports
-  * User links
+Sprint 1 Deliverables:
+  * [Sprint 1 Report](./Sprint%201/Sprint%201/)
+  * [Sprint 1 Video](./Sprint%201/)
 
 ## License
 
-If you haven't already, add a file called `LICENSE.txt` with the text of the appropriate license.
-We recommend using the MIT license: <https://choosealicense.com/licenses/mit/>
+[License](./LICENSE)
