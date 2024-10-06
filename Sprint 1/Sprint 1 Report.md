@@ -1,62 +1,61 @@
-# Sprint x Report (8/26/21 - 9/24/2021)
+# Sprint 1 Report (9/3/2024 - 10/5/2024)
 
 ## What's New (User Facing)
- * Feature 1 or Bug Fix 1
- * Feature 2 or Bug Fix 2
- * Feature n or Bug Fix n
+
+Since there has been no code developed for the user and no new features for the end user to interact with, all features have been implemented on the developer side. Expect to see many more user facing features with the conclusion of Sprint 2.
 
 ## Work Summary (Developer Facing)
-Provide a one paragraph synposis of what your team accomplished this sprint. Don't repeat the "What's New" list of features. Instead, help the instructor understand how you went about the work described there, any barriers you overcame, and any significant learnings for your team.
+
+For the first sprint of the team’s first Sprint with this project, the focus was on research surrounding the first potential implementation of a semantic clone generator using Python’s Syntax Trees. Several issues were made for each team member detailing different Python libraries, presentations, and articles related to Syntax Trees and automatically refactoring code. No active development was done during this Sprint.
 
 ## Unfinished Work
-If applicable, explain the work you did not finish in this sprint. For issues/user stories in the current sprint that have not been closed, (a) any progress toward completion of the issues has been clearly tracked (by checking the checkboxes of  acceptance criteria), (b) a comment has been added to the issue to explain why the issue could not be completed (e.g., "we ran out of time" or "we did not anticipate it would be so much work"), and (c) the issue is added to a subsequent sprint, so that it can be addressed later.
+
+The only User Stories we did not implement for this sprint were all of the issues sitting in the Icebox. These issues consist of code developed functional requirements. Per our meetings with our client, code development should not be started until Sprint 2. Tashi wished that we understand the theory and concepts before actually implementing the code for the tool. That being said, all other user stories such as research-oriented user stories were all completed and closed for Sprint 1.
 
 ## Completed Issues/User Stories
+
 Here are links to the issues that we completed in this sprint:
+ * [Automated Refactoring Large Python Codebases Presentation](https://github.com/users/BryanFrederickson/projects/3?pane=issue&itemId=82117539) 
+ * [MonkeyType Python Library](https://github.com/users/BryanFrederickson/projects/3?pane=issue&itemId=82117006)
+ * [See Viability of Rope Library](https://github.com/users/BryanFrederickson/projects/3?pane=issue&itemId=81673386)
+ * [Python Automated Code Transformations](https://github.com/users/BryanFrederickson/projects/3?pane=issue&itemId=81673006)
+ * [Python Abstract Syntax Tree Docs](https://github.com/users/BryanFrederickson/projects/3?pane=issue&itemId=81260838)
+ * [Client-provided Research Paper Review](https://github.com/users/BryanFrederickson/projects/3?pane=issue&itemId=81800180)
+ * [Python Library/Algorithm Exploration and Research](https://github.com/users/BryanFrederickson/projects/3?pane=issue&itemId=81801110)
+ * [tkinter Library Exploration](https://github.com/users/BryanFrederickson/projects/3?pane=issue&itemId=82256652)
+ * [Explore existing solutions](https://github.com/users/BryanFrederickson/projects/3?pane=issue&itemId=82250649)   
 
- * URL of issue 1
- * URL of issue 2
- * URL of issue n
 
- Reminders (Remove this section when you save the file):
-  * Each issue should be assigned to a milestone
-  * Each completed issue should be assigned to a pull request
-  * Each completed pull request should include a link to a "Before and After" video
-  * All team members who contributed to the issue should be assigned to it on GitHub
-  * Each issue should be assigned story points using a label
-  * Story points contribution of each team member should be indicated in a comment
  
  ## Incomplete Issues/User Stories
- Here are links to issues we worked on but did not complete in this sprint:
+
+We could not attend to these issues because they were created to satisfy client functional requirements. Sprint 1 was primarily research based with no active development, so the below issues will be addressed in Sprint 2 onwards.
+
+Here are links to issues we created but did not work on for this sprint:
+ * [Unique N Permutations](https://github.com/users/BryanFrederickson/projects/3?pane=issue&itemId=80823249)
+ * [Implement Abstract Syntax Trees](https://github.com/users/BryanFrederickson/projects/3?pane=issue&itemId=80823908)
+ * [Create a UI for entering tool input](https://github.com/users/BryanFrederickson/projects/3?pane=issue&itemId=80836274)
+ * [Implement Program String Generator](https://github.com/users/BryanFrederickson/projects/3?pane=issue&itemId=80837093)
  
- * URL of issue 1 <<One sentence explanation of why issue was not completed>>
- * URL of issue 2 <<One sentence explanation of why issue was not completed>>
- * URL of issue n <<One sentence explanation of why issue was not completed>>
- 
- Examples of explanations (Remove this section when you save the file):
-  * "We ran into a complication we did not anticipate (explain briefly)." 
-  * "We decided that the feature did not add sufficient value for us to work on it in this sprint (explain briefly)."
-  * "We could not reproduce the bug" (explain briefly).
-  * "We did not get to this issue because..." (explain briefly)
 
 ## Code Files for Review
+
 Please review the following code files, which were actively developed during this sprint, for quality:
- * [Name of code file 1](https://github.com/your_repo/file_extension)
- * [Name of code file 2](https://github.com/your_repo/file_extension)
- * [Name of code file 3](https://github.com/your_repo/file_extension)
+ * No code files developed for Sprint 1.
  
 ## Retrospective Summary
+
 Here's what went well:
-  * Item 1
-  * Item 2
-  * Item x
+  * Client meetings were consistent and productive. Project requirements were strait-forward and easy to comprehend. Great visuals and explanations of topics introduced from clients which gave team members a good start for researching applicable topics.
+  * Self-guided research allowed for more flexible exploration and creativity of how the Cyber1- Code Version tool would be developed. 
+  * Team communication was efficient and allocation of project work was split evenly. Many forms of contact to discuss currently worked on tasks along with good management of Kanban Board.
  
 Here's what we'd like to improve:
-   * Item 1
-   * Item 2
-   * Item x
-  
+   * More detailed responses in project report sections moving forward. Needs to be more scientific and formal in the upcoming sprints. 
+   * Increase the amount of references used in our project since it is research-oriented. Even if resources sections aren’t entirely utilized, better more than less.
+   * Creation of a lot more user stories so that Kanban is more populated and constant progress is being made towards fulfilling client requirements.
+ 
 Here are changes we plan to implement in the next sprint:
-   * Item 1
-   * Item 2
-   * Item x
+   * Video coordination and filming will be with all participants present rather than isolated filming segments. Implemented for video requirement clarity and work allocation.
+   * Break down current functional requirements into subtasks so User stories aren’t as broad. Allows clarity through development and makes sure all client requirements are met.
+   * Keeping track of MoM within a few days after the meeting of clients and instructor takes place so new activities are fresh in group members minds.
