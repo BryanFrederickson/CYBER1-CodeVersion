@@ -8,6 +8,8 @@ Since there has been no code developed for the user and no new features for the 
 
 For the first sprint of the team’s first Sprint with this project, the focus was on research surrounding the first potential implementation of a semantic clone generator using Python’s Syntax Trees. Several issues were made for each team member detailing different Python libraries, presentations, and articles related to Syntax Trees and automatically refactoring code. No active development was done during this Sprint.
 
+For a video explaining the progress made during this Sprint in more detail, look here: [CYBER1-CodeVersion Sprint 1 Demo Video](https://youtu.be/1v400lVrzvU)
+
 ## Unfinished Work
 
 The only User Stories we did not implement for this sprint were all of the issues sitting in the Icebox. These issues consist of code developed functional requirements. Per our meetings with our client, code development should not be started until Sprint 2. Tashi wished that we understand the theory and concepts before actually implementing the code for the tool. That being said, all other user stories such as research-oriented user stories were all completed and closed for Sprint 1.
@@ -24,8 +26,6 @@ Here are links to the issues that we completed in this sprint:
  * [Python Library/Algorithm Exploration and Research](https://github.com/users/BryanFrederickson/projects/3?pane=issue&itemId=81801110)
  * [tkinter Library Exploration](https://github.com/users/BryanFrederickson/projects/3?pane=issue&itemId=82256652)
  * [Explore existing solutions](https://github.com/users/BryanFrederickson/projects/3?pane=issue&itemId=82250649)   
-
-
  
  ## Incomplete Issues/User Stories
 
