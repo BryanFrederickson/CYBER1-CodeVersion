@@ -56,7 +56,7 @@ TODO: Leave the steps below if you want others to contribute to your project.
 ## Additional Documentation
 
 Sprint 1 Deliverables:
-  * [Sprint 1 Report](./Sprint%201/Sprint%201/)
+  * [Sprint 1 Report](./Sprint%201/)
   * [Sprint 1 Video](./Sprint%201/)
 
 ## License
