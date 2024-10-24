@@ -15,6 +15,8 @@ Develop a tool to generate unique permutations of a given C/C++ or Python source
 
 This project is meant to help signature-based intrusion detection by being able to generate semantic copies of known code, to better identify malicious software that has been changed to avoid detection.
 
+Rough prototypes can be found in the `python_notebook_tests` branch, which has been kept separate to ensure that main contains only accessible, functional code.
+
 ## Installation
 
 ### Prerequisites
