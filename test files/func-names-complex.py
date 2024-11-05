@@ -37,3 +37,8 @@ def log(left, right):
 
 var=log(a,b)
 print(var) # -5
+
+class first:
+    class second:
+        third = 4
+print(first.second.third)
