@@ -20,6 +20,9 @@ def log(left, right):
 var=log(a,b)
 print(var) # -5
 
+import math
+print(math.log(a,b)) # 0.6989700043360187
+
 import math as blah
 var=log(a,b)
 print(var) # -5
