@@ -25,7 +25,7 @@ Here are links to the issues that we completed in this sprint:
  * #18 - [Google Gemini Synonym Generation (Variables)](https://github.com/BryanFrederickson/CYBER1-CodeVersion/issues/18)
    - Gemini has more restrictions on certain phrases such as 'hash' or 'password' that results sensitive content. Some logic clashes when it comes to local variables versus libraries imported as objects. ( Ex: x. versus libsct.func() where x is a varname and libsct is an imported library)
  * #19 - [Google Gemini Synonym Generation (Functions)](https://github.com/BryanFrederickson/CYBER1-CodeVersion/issues/19)
-   - Since the function renamer was our main priority for this sprint, the team decided to focus on getting a simple function name chnage. If the logic is implemented right, the Gemini API will be very simple to use instead of pre-existing names to swap with.
+   - Since the function renamer was our main priority for this sprint, the team decided to focus on getting a simple function name change. If the logic is implemented right, the Gemini API will be very simple to use instead of pre-existing names to swap with.
  * #17 - [Auto Rename Variables](https://github.com/BryanFrederickson/CYBER1-CodeVersion/issues/17)
    - LibCST nodes are not well documented, finishing the Function renamer was prioritized. Base functionality works for low level complex code.
  * #14 - [Create a base GUI window](https://github.com/BryanFrederickson/CYBER1-CodeVersion/issues/14)
