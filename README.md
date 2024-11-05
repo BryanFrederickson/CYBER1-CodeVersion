@@ -1,7 +1,6 @@
 ## A collection of project files and documentation regarding the CYBER1-CodeVersion CPTS 421 group capstone project. ## 
 
-# Project Name
-CYBER1-CodeVersion
+# CYBER1-CodeVersion
 
 Developers: Bryan Frederickson, Samantha Brewer (KleinMandolin)
 
@@ -21,28 +20,33 @@ Rough prototypes can be found in the `python_notebook_tests` branch, which has b
 
 ### Prerequisites
 
-TODO: List what a user needs to have installed before running the installation instructions below (e.g., git, which versions of Ruby/Rails)
+TODO: List what a user needs to have installed before running the installation instructions below (e.g., git, which versions of Ruby/Rails).
+- As of Sprint 2, rough algorithmic testing is still being done. A user-friendly and acccessible program will be developed in Sprint 3, with the instructions for use being updated here.
 
 ### Add-ons
 
 TODO: List which add-ons are included in the project, and the purpose each add-on serves in your app.
+- As of Sprint 2, rough algorithmic testing is still being done. A user-friendly and acccessible program will be developed in Sprint 3, with the instructions for use being updated here.
 
 ### Installation Steps
 
 TODO: Describe the installation process (making sure you mention `bundle install`).
 Instructions need to be such that a user can just copy/paste the commands to get things set up and running. 
+- As of Sprint 2, rough algorithmic testing is still being done. A user-friendly and acccessible program will be developed in Sprint 3, with the instructions for use being updated here.
 
 
 ## Functionality
 
 TODO: Write usage instructions. Structuring it as a walkthrough can help structure this section,
 and showcase your features.
+- As of Sprint 2, rough algorithmic testing is still being done. A user-friendly and acccessible program will be developed in Sprint 3, with the instructions for use being updated here.
 
 
 ## Known Problems
 
 TODO: Describe any known issues, bugs, odd behaviors or code smells. 
 Provide steps to reproduce the problem and/or name a file or a function where the problem lives.
+- As of Sprint 2, rough algorithmic testing is still being done. A user-friendly and acccessible program will be developed in Sprint 3, with the instructions for use being updated here.
 
 
 ## Contributing
@@ -58,8 +62,13 @@ TODO: Leave the steps below if you want others to contribute to your project.
 ## Additional Documentation
 
 Sprint 1 Deliverables:
-  * [Sprint 1 Report](./Sprint%201/)
+  * [Sprint 1 Report](https://github.com/BryanFrederickson/CYBER1-CodeVersion/blob/a25a48244798548cd4a268eccc165d2b1de35dab/Sprints/Sprint%201/Sprint%201%20Report.md)
   * [Sprint 1 Video](https://youtu.be/1v400lVrzvU)
+
+Sprint 2 Deliverables:
+  * [Sprint 2 Report](https://github.com/BryanFrederickson/CYBER1-CodeVersion/blob/6e0719cde0e0347c24d3416c51d3eb0ba2188fb2/Sprints/Sprint%202/Sprint%202%20Report.md)
+  * TODO: Sprint 2 Video
+
 ## License
 
 [License](./LICENSE)
