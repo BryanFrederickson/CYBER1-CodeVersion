@@ -14,16 +14,20 @@ Due to the complexity of the algorithm implementation, development on any user-f
 ## Completed Issues/User Stories
 Here are links to the issues that we completed in this sprint:
 
+ * #2  - [Implement Abstract Syntax Trees](https://github.com/BryanFrederickson/CYBER1-CodeVersion/issues/2)
+ * #4  - [Implement Program String Generator](https://github.com/BryanFrederickson/CYBER1-CodeVersion/issues/4). This function only necessary for program AST analysis.
  * #15 - [Proto File Input to LibCST Conversion](https://github.com/BryanFrederickson/CYBER1-CodeVersion/issues/15)
  * #16 - [Auto Rename Functions](https://github.com/BryanFrederickson/CYBER1-CodeVersion/issues/16)
  
  ## Incomplete Issues/User Stories
  Here are links to issues we worked on but did not complete in this sprint:
 
- * #18 - [ChatGPT Synonym Generation](https://github.com/BryanFrederickson/CYBER1-CodeVersion/issues/18)
-   - ChatGPT has limited free use tokens, research into other LLM's with API support was started.
+ * #18 - [Google Gemini Synonym Generation (Variables)](https://github.com/BryanFrederickson/CYBER1-CodeVersion/issues/18)
+   - Gemini has more restrictions on certain phrases such as 'hash' or 'password' that results sensitive content. Some logic clashes when it comes to local variables versus libraries imported as objects. ( Ex: x. versus libsct.func() where x is a varname and libsct is an imported library)
+ * #19 - [Google Gemini Synonym Generation (Functions)](https://github.com/BryanFrederickson/CYBER1-CodeVersion/issues/19)
+   - Since the function renamer was our main priority for this sprint, the team decided to focus on getting a simple function name chnage. If the logic is implemented right, the Gemini API will be very simple to use instead of pre-existing names to swap with.
  * #17 - [Auto Rename Variables](https://github.com/BryanFrederickson/CYBER1-CodeVersion/issues/17)
-   - LibCST nodes are not well documented, finishing the Function renamer was prioritized.
+   - LibCST nodes are not well documented, finishing the Function renamer was prioritized. Base functionality works for low level complex code.
  * #14 - [Create a base GUI window](https://github.com/BryanFrederickson/CYBER1-CodeVersion/issues/14)
    - User-facing visual elements will be left for Sprint 3 so that we could prioritize a functional algorithm.
  * #4 - [Implement Program String Generator](https://github.com/BryanFrederickson/CYBER1-CodeVersion/issues/4)
