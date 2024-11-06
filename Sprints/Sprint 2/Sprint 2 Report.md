@@ -1,6 +1,6 @@
-# Sprint x Report (Dates from Sprint 1 to Sprint 2)
+# Sprint 2 Report (Dates from Sprint 1 to Sprint 2)
 
-## YouTube link of Sprint 2 Video (Make this video unlisted)
+[Sprint 2 Demo Video](https://youtu.be/h4OGVBQQoWc)
 
 ## What's New (User Facing)
 Nothing new has been developed specifically for end-users, however the python-notebook-tests branch contains files for viewers who want to test the Python notebook.
