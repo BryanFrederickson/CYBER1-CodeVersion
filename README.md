@@ -19,9 +19,9 @@ Rough prototypes can be found in the `python_notebook_tests` branch, which has b
 ## Installation
 
 ### Prerequisites
-
-TODO: List what a user needs to have installed before running the installation instructions below (e.g., git, which versions of Ruby/Rails).
-- As of Sprint 2, rough algorithmic testing is still being done. A user-friendly and acccessible program will be developed in Sprint 3, with the instructions for use being updated here.
+These instructions are written for modern Windows. The Windows command line can be opened via typing ```cmd``` in the search bar of File Explorer.
+1. Python3 - Can be installed in multiple ways. The easiest way for Windows is via [installers](https://www.python.org/downloads/windows/). Check it's installed via ```python --version``` in powershell/command line.
+2. LibCST - Installed in command line/powershell via ```pip install libcst```
 
 ### Add-ons
 
