@@ -19,7 +19,7 @@ Rough prototypes can be found in the `python_notebook_tests` branch, which has b
 ## Installation
 
 ### Prerequisites
-These instructions are written for modern Windows. The Windows command line can be opened via typing ```cmd``` in the search bar of File Explorer or by searching in programs for Command Prompt.
+These instructions are written for modern Windows. For installing prerqs on Windows, run Command Prompt as administrator.
 1. Python3 - Can be installed in multiple ways. The easiest way for Windows is via [installers](https://www.python.org/downloads/windows/). Check it's installed via ```python --version``` in powershell/command line.
 2. LibCST - Installed in command line/powershell using ```pip install libcst```
 3. Gemini API - Installed via command line/powershell using ```pip install -U google-generativeai```
