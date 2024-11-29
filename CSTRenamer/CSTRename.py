@@ -44,6 +44,7 @@ Rename Variables
 
 '''
 
+# animal wordbank list from: https://gist.github.com/CheeseCake87/c1d222c387ff1342cf3b910456f4865a
 animals = ['Canidae', 'Felidae', 'Cat', 'Cattle', 'Dog', 'Donkey', 'Goat', 'Horse', 'Pig', 'Rabbit',
            'Aardvark', 'Aardwolf', 'Albatross', 'Alligator', 'Alpaca', 'Amphibian', 'Anaconda',
            'Angelfish', 'Anglerfish', 'Ant', 'Anteater', 'Antelope', 'Antlion', 'Ape', 'Aphid',
