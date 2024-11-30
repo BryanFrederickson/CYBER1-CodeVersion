@@ -6,11 +6,18 @@ import re # for regular expressions
 from libcst.metadata import MetadataWrapper, ParentNodeProvider # for in-depth cst node parsing
 import google.generativeai as genai # for generating synonyms
 
+# used to check how many api rename calls failed, so that after a specific amount of fails,
+# stop notifying user and clogging terminal
+call_fails=0
+api_fail_notif_cap=5
 
+###
 '''
 Parse and Test Input File
 
 '''
+###
+
 print("Input the filepath for input Python file. In Windows file explorer, select the file then shift right click, then select \'Copy as path\'. Paste into terminal using right click.")
 while True:
     input_path=input("Filepath: ")
@@ -39,56 +46,78 @@ while True:
 
 original_cst=cst.parse_module(source_code)
 
+###
+'''
+Get N-Param
+
+'''
+###
+
+while True:
+    try:
+        n_param = int(input("Number of clones to generate: "))
+        break
+    except ValueError:
+        print("Not an integer!")
+
+
+###
+'''
+Get Renaming Probabilities
+
+'''
+###
+
+print("Define the probabilities of either a variable or function getting renamed. Must be a float between 0 and 1 inclusive, such as 0.5 for 50%.")
+# get variable renaming probability
+while True:
+    try:
+        VAR_RENAME_PROBABILITY = float(input("Variable Rename Probability: "))
+        if 0.0 <= VAR_RENAME_PROBABILITY <= 1.0:
+            break
+        else:
+            print("Probability must be between 0 and 1!")
+    except ValueError:
+        print("Not a number!")
+
+# get function renaming probability
+while True:
+    try:
+        FUNC_RENAME_PROBABILITY = float(input("Function Rename Probability: "))
+        if 0.0 <= FUNC_RENAME_PROBABILITY <= 1.0:
+            break
+        else:
+            print("Probability must be between 0 and 1!")
+    except ValueError:
+        print("Not a number!")
+
+###
+'''
+Define Save Location
+
+'''
+###
+
+print("Please define a location for the renamed python output files to be saved. In Windows file explorer, you can select the current folder location by clicking the location bar at the top and copying.")
+while True:
+    out_path=input("Filepath: ")
+    output_path=Path(out_path.replace('"', ''))
+    if output_path.is_file():
+        print("Not a directory!")
+    else:
+        output_path.mkdir(parents=True, exist_ok=True)
+        break
+print("\n")
+
+###
 '''
 Rename Variables
 
 '''
+###
 
 # animal wordbank list from: https://gist.github.com/CheeseCake87/c1d222c387ff1342cf3b910456f4865a
-animals = ['Canidae', 'Felidae', 'Cat', 'Cattle', 'Dog', 'Donkey', 'Goat', 'Horse', 'Pig', 'Rabbit',
-           'Aardvark', 'Aardwolf', 'Albatross', 'Alligator', 'Alpaca', 'Amphibian', 'Anaconda',
-           'Angelfish', 'Anglerfish', 'Ant', 'Anteater', 'Antelope', 'Antlion', 'Ape', 'Aphid',
-           'Armadillo', 'Asp', 'Baboon', 'Badger', 'Bandicoot', 'Barnacle', 'Barracuda', 'Basilisk',
-           'Bass', 'Bat', 'Bear', 'Beaver', 'Bedbug', 'Bee', 'Beetle', 'Bird', 'Bison', 'Blackbird',
-           'Boa', 'Boar', 'Bobcat', 'Bobolink', 'Bonobo', 'Bovid', 'Bug', 'Butterfly', 'Buzzard',
-           'Camel', 'Canid', 'Capybara', 'Cardinal', 'Caribou', 'Carp', 'Cat', 'Catshark',
-           'Caterpillar', 'Catfish', 'Cattle', 'Centipede', 'Cephalopod', 'Chameleon', 'Cheetah',
-           'Chickadee', 'Chicken', 'Chimpanzee', 'Chinchilla', 'Chipmunk', 'Clam', 'Clownfish',
-           'Cobra', 'Cockroach', 'Cod', 'Condor', 'Constrictor', 'Coral', 'Cougar', 'Cow', 'Coyote',
-           'Crab', 'Crane', 'Crawdad', 'Crayfish', 'Cricket', 'Crocodile', 'Crow', 'Cuckoo', 'Cicada',
-           'Damselfly', 'Deer', 'Dingo', 'Dinosaur', 'Dog', 'Dolphin', 'Donkey', 'Dormouse', 'Dove',
-           'Dragonfly', 'Dragon', 'Duck', 'Eagle', 'Earthworm', 'Earwig', 'Echidna', 'Eel', 'Egret',
-           'Elephant', 'Elk', 'Emu', 'Ermine', 'Falcon', 'Ferret', 'Finch', 'Firefly', 'Fish',
-           'Flamingo', 'Flea', 'Fly', 'Flyingfish', 'Fowl', 'Fox', 'Frog', 'Gamefowl', 'Galliform',
-           'Gazelle', 'Gecko', 'Gerbil', 'Gibbon', 'Giraffe', 'Goat', 'Goldfish', 'Goose', 'Gopher',
-           'Gorilla', 'Grasshopper', 'Grouse', 'Guan', 'Guanaco', 'Guineafowl', 'Gull', 'Guppy',
-           'Haddock', 'Halibut', 'Hamster', 'Hare', 'Harrier', 'Hawk', 'Hedgehog', 'Heron', 'Herring',
-           'Hippopotamus', 'Hookworm', 'Hornet', 'Horse', 'Hoverfly', 'Hummingbird', 'Hyena', 'Iguana',
-           'Impala', 'Jackal', 'Jaguar', 'Jay', 'Jellyfish', 'Junglefowl', 'Kangaroo', 'Kingfisher',
-           'Kite', 'Kiwi', 'Koala', 'Koi', 'Krill', 'Ladybug', 'Lamprey', 'Landfowl', 'Lark', 'Leech',
-           'Lemming', 'Lemur', 'Leopard', 'Leopon', 'Limpet', 'Lion', 'Lizard', 'Llama', 'Lobster',
-           'Locust', 'Loon', 'Louse', 'Lungfish', 'Lynx', 'Macaw', 'Mackerel', 'Magpie', 'Mammal',
-           'Manatee', 'Mandrill', 'Marlin', 'Marmoset', 'Marmot', 'Marsupial', 'Marten', 'Mastodon',
-           'Meadowlark', 'Meerkat', 'Mink', 'Minnow', 'Mite', 'Mockingbird', 'Mole', 'Mollusk',
-           'Mongoose', 'Monkey', 'Moose', 'Mosquito', 'Moth', 'Mouse', 'Mule', 'Muskox', 'Narwhal',
-           'Newt', 'Nightingale', 'Ocelot', 'Octopus', 'Opossum', 'Orangutan', 'Orca', 'Ostrich',
-           'Otter', 'Owl', 'Ox', 'Panda', 'Panther', 'Parakeet', 'Parrot', 'Parrotfish', 'Partridge',
-           'Peacock', 'Peafowl', 'Pelican', 'Penguin', 'Perch', 'Pheasant', 'Pig', 'Pigeon', 'Pike',
-           'Pinniped', 'Piranha', 'Planarian', 'Platypus', 'Pony', 'Porcupine', 'Porpoise', 'Possum',
-           'Prawn', 'Primate', 'Ptarmigan', 'Puffin', 'Puma', 'Python', 'Quail', 'Quelea', 'Quokka',
-           'Rabbit', 'Raccoon', 'Rat', 'Rattlesnake', 'Raven', 'Reindeer', 'Reptile', 'Rhinoceros',
-           'Roadrunner', 'Rodent', 'Rook', 'Rooster', 'Roundworm', 'Sailfish', 'Salamander', 'Salmon',
-           'Sawfish', 'Scallop', 'Scorpion', 'Seahorse', 'Shark', 'Sheep', 'Shrew', 'Shrimp',
-           'Silkworm', 'Silverfish', 'Skink', 'Skunk', 'Sloth', 'Slug', 'Smelt', 'Snail', 'Snake',
-           'Snipe', 'Sole', 'Sparrow', 'Spider', 'Spoonbill', 'Squid', 'Squirrel', 'Starfish',
-           'Stingray', 'Stoat', 'Stork', 'Sturgeon', 'Swallow', 'Swan', 'Swift', 'Swordfish',
-           'Swordtail', 'Tahr', 'Takin', 'Tapir', 'Tarantula', 'Tarsier', 'Termite', 'Tern', 'Thrush',
-           'Tick', 'Tiger', 'Tiglon', 'Toad', 'Tortoise', 'Toucan', 'Trout', 'Tuna', 'Turkey',
-           'Turtle', 'Tyrannosaurus', 'Urial', 'Vicuna', 'Viper', 'Vole', 'Vulture', 'Wallaby',
-           'Walrus', 'Wasp', 'Warbler', 'Weasel', 'Whale', 'Whippet', 'Whitefish', 'Wildcat',
-           'Wildebeest', 'Wildfowl', 'Wolf', 'Wolverine', 'Wombat', 'Woodpecker', 'Worm', 'Wren',
-           'Xerinae', 'Yak', 'Zebra', 'Alpaca', 'Cat', 'Cattle', 'Chicken', 'Dog', 'Donkey', 'Ferret',
-           'Gayal', 'Goldfish', 'Guppy', 'Horse', 'Koi', 'Llama', 'Sheep', 'Yak']
+animals = list()
 
 ## Utilizing Google Gemini 1.5-falsh model ##
 model = genai.GenerativeModel("gemini-1.5-flash")
@@ -111,29 +140,34 @@ class VarRename(cst.CSTTransformer):
 
         ## Only rename the variable if Gemini has not come up with a synonym for it. Otherwise return the current synonym ##
         if original_varname not in existing_vars:
+            if random.random() < VAR_RENAME_PROBABILITY:
 
-            try:
+                try:
 
-                ## Creation of prompt for provided original variable name ##
-                synonym = model.generate_content(f"Provide a one-word synonym for '{original_varname}' in a coding context. Also make it lower case or camel-case. Make it unique, different, and distinct. [{random.randint(0, 10000)}. Please answer with only the wrod and nothing more.]")
+                    ## Creation of prompt for provided original variable name ##
+                    synonym = model.generate_content(f"Provide a one-word synonym for '{original_varname}' in a coding context. Also make it lower case or camel-case. Make it unique, different, and distinct. [{random.randint(0, 10000)}. Please answer with only the wrod and nothing more.]")
 
-                ## Parse the API return value to extract the reponse as text ##
-                synonym = synonym.text
-                synonym = re.sub(r"[^a-zA-Z0-9_]", "", synonym)
+                    ## Parse the API return value to extract the reponse as text ##
+                    synonym = synonym.text
+                    synonym = re.sub(r"[^a-zA-Z0-9_]", "", synonym)
 
-                ## Add key-value pair to the dictionary if it does not exist already ##
-                existing_vars[original_varname] = synonym
+                    ## Add key-value pair to the dictionary if it does not exist already ##
+                    existing_vars[original_varname] = synonym
 
-            except Exception as e:
-
-                print(f"Error fetching synonym for '{original_varname}', using animal name placeholder.")
-                #print(f"Error fetching synonym for '{original_varname}':", e)
-                #existing_vars[original_varname] = original_varname
-                new_name=random.choice(animals)
-                animals.remove(new_name)
-                animals.append(str(new_name+str(1)))
-                existing_vars[original_varname] = new_name
-
+                except Exception as e:
+                    global call_fails
+                    if call_fails < api_fail_notif_cap:
+                        print(f"Error fetching synonym for '{original_varname}', using animal name placeholder.")
+                        call_fails=call_fails+1
+                        if call_fails == api_fail_notif_cap:
+                            print(f"Cap of '{api_fail_notif_cap}' error(s) with API synonym fetching, will no longer print errors.")
+                    new_name=random.choice(animals)
+                    animals.remove(new_name)
+                    animals.append(str(new_name+str(1)))
+                    existing_vars[original_varname] = new_name
+            else:
+                # keep unchanged, add to dict so that it doesn't run this every time an unchanged var is hit
+                existing_vars[original_varname] = original_varname
         return existing_vars[original_varname]
     #######################################################################################################
 
@@ -155,7 +189,7 @@ class VarRename(cst.CSTTransformer):
 
 
 
-    ######################### Function for transforming the 'For' type Name nodes #########################
+     ######################### Function for transforming the 'For' type Name nodes #########################
 
     # Context for function: Variable is present within a For statement as a target or iter value. #
     # (Ex: for variable in variable2:)
@@ -214,10 +248,15 @@ class VarRename(cst.CSTTransformer):
 
     def leave_Attribute(self, original_node: cst.AssignTarget, updated_node: cst.AssignTarget) -> cst.AssignTarget:
 
-        if isinstance(updated_node.value, cst.Name) and updated_node.value.value in existing_vars:
+        if (isinstance(updated_node.value, cst.Name) and updated_node.value.value in existing_vars):
 
             new_varname = self.get_synonym(updated_node.value.value)
             return updated_node.with_changes(value=updated_node.value.with_changes(value=new_varname))
+
+
+        if (isinstance(updated_node.attr, cst.Name) and updated_node.attr.value in existing_vars):
+            new_varname = self.get_synonym(updated_node.attr.value)
+            return updated_node.with_changes(attr=updated_node.attr.with_changes(value=new_varname))
 
         return updated_node
     #######################################################################################################
@@ -319,8 +358,9 @@ class VarRename(cst.CSTTransformer):
 
         return updated_node
     #######################################################################################################
-    
-    
+
+
+
     def leave_FormattedString(self, original_node: cst.FormattedString, updated_node: cst.FormattedString) -> cst.FormattedString:
 
         new_parts = []
@@ -342,38 +382,18 @@ class VarRename(cst.CSTTransformer):
 
                 new_parts.append(part)
 
-        # Update the formatted string with the modified parts
         return updated_node.with_changes(parts=new_parts)
+      #######################################################################################################
 
-## Provides extra data for every node in the tree ##
-wrapped_module = MetadataWrapper(original_cst)
-## Traverse tree with transformer subclass ##
-vars_renamed = wrapped_module.visit(VarRename())
-print("Variables renamed...")
-
-
+###
 '''
 Rename Functions
 
 '''
+###
+
 # placeholder list to replace function names with
-colors = ['aliceblue','antiquewhite','aqua','aquamarine','azure','beige','bisque','black','blanchedalmond',
-          'blue','blueviolet','brown','burlywood','cadetblue','chartreuse','chocolate','coral','cornflowerblue',
-          'cornsilk','crimson','cyan','darkblue','darkcyan','darkgoldenrod','darkgray','darkgreen','darkkhaki',
-          'darkmagenta','darkolivegreen','darkorange','darkorchid','darkred','darksalmon','darkseagreen',
-          'darkslateblue','darkslategray','darkturquoise','darkviolet','deeppink','deepskyblue','dimgray',
-          'dodgerblue','firebrick','floralwhite','forestgreen','fuchsia','gainsboro','ghostwhite','gold','goldenrod',
-          'gray','green','greenyellow','honeydew','hotpink','indianred','indigo','ivory','khaki','lavender',
-          'lavenderblush','lawngreen','lemonchiffon','lightblue','lightcoral','lightcyan','lightgoldenrodyellow',
-          'lightgreen','lightgray','lightpink','lightsalmon','lightseagreen','lightskyblue','lightslategray',
-          'lightsteelblue','lightyellow','lime','limegreen','linen','magenta','maroon','mediumaquamarine','mediumblue',
-          'mediumorchid','mediumpurple','mediumseagreen','mediumslateblue','mediumspringgreen','mediumturquoise',
-          'mediumvioletred','midnightblue','mintcream','mistyrose','moccasin','navajowhite','navy','oldlace','olive',
-          'olivedrab','orange','orangered','orchid','palegoldenrod','palegreen','paleturquoise','palevioletred',
-          'papayawhip','peachpuff','peru','pink','plum','powderblue','purple','red','rosybrown','royalblue','saddlebrown',
-          'salmon','sandybrown','seagreen','seashell','sienna','silver','skyblue','slateblue','slategray','snow',
-          'springgreen','steelblue','tan','teal','thistle','tomato','turquoise','violet','wheat','white','whitesmoke'
-          ,'yellow','yellowgreen']
+colors = list()
 
 #dict of existing pairs, will be used to replace all calls of old function with calls to new name
 # assuming that multiple funcs don't have the same new name
@@ -386,10 +406,13 @@ class FuncRename(cst.CSTTransformer):
   # FunctionDef node docs: (https://libcst.readthedocs.io/_/downloads/en/latest/pdf/#page=73&zoom=auto,-205,215)
   def leave_FunctionDef(self, node: cst.FunctionDef, updated_node: cst.FunctionDef) -> cst.FunctionDef:
     if updated_node.name.value not in func_name_pairs:
-      new_name=random.choice(colors)
-      colors.remove(new_name)
-      colors.append(str(new_name+str(1)))
-      func_name_pairs.update({updated_node.name.value: new_name})
+        if random.random() < FUNC_RENAME_PROBABILITY:
+            new_name=random.choice(colors)
+            colors.remove(new_name)
+            colors.append(str(new_name+str(1)))
+            func_name_pairs.update({updated_node.name.value: new_name})
+        else:
+            func_name_pairs.update({updated_node.name.value: updated_node.name.value})
     # the name node in function def is a child node, thus to change function name via the FunctionDef parent node, use with_deep_changes via:
     # (https://libcst.readthedocs.io/en/latest/nodes.html#libcst.CSTNode.with_deep_changes)
 
@@ -402,11 +425,13 @@ class FuncRename(cst.CSTTransformer):
     alias_node=updated_node.asname
     if alias_node:
       if alias_node.name.value not in func_name_pairs:
-        new_name=random.choice(colors)
-        colors.remove(new_name)
-        colors.append(str(new_name+str(1)))
-        func_name_pairs.update({alias_node.name.value: new_name})
-
+        if random.random() < FUNC_RENAME_PROBABILITY:
+            new_name=random.choice(colors)
+            colors.remove(new_name)
+            colors.append(str(new_name+str(1)))
+            func_name_pairs.update({alias_node.name.value: new_name})
+        else:
+            func_name_pairs.update({alias_node.name.value: alias_node.name.value})
       #print("Import alias of \'"+alias_node.name.value+"\' has been renamed to \'"+func_name_pairs[alias_node.name.value]+"\'")
       return updated_node.with_deep_changes(updated_node.asname.name, value=func_name_pairs[alias_node.name.value])
     return updated_node
@@ -437,28 +462,99 @@ class CallRename(cst.CSTTransformer):
         return updated_node.with_deep_changes(updated_node.func.value, value=func_name_pairs[updated_node.func.value.value])
     return updated_node
 
-
-funcs_renamed=vars_renamed.visit(FuncRename())
-print("Functions renamed...")
-func_calls_renamed=funcs_renamed.visit(CallRename())
-print("Function calls renamed...")
-
+###
 '''
 Save final edited source code into Python file
 
 '''
+###
 
-#modified_code=transformed_cst.code
-modified_code=func_calls_renamed.code
+for i in range(n_param):
+    
+    # reset values
+    func_name_pairs=dict()
+    existing_vars=dict()
+    colors = ['aliceblue','antiquewhite','aqua','aquamarine','azure','beige','bisque','black','blanchedalmond',
+          'blue','blueviolet','brown','burlywood','cadetblue','chartreuse','chocolate','coral','cornflowerblue',
+          'cornsilk','crimson','cyan','darkblue','darkcyan','darkgoldenrod','darkgray','darkgreen','darkkhaki',
+          'darkmagenta','darkolivegreen','darkorange','darkorchid','darkred','darksalmon','darkseagreen',
+          'darkslateblue','darkslategray','darkturquoise','darkviolet','deeppink','deepskyblue','dimgray',
+          'dodgerblue','firebrick','floralwhite','forestgreen','fuchsia','gainsboro','ghostwhite','gold','goldenrod',
+          'gray','green','greenyellow','honeydew','hotpink','indianred','indigo','ivory','khaki','lavender',
+          'lavenderblush','lawngreen','lemonchiffon','lightblue','lightcoral','lightcyan','lightgoldenrodyellow',
+          'lightgreen','lightgray','lightpink','lightsalmon','lightseagreen','lightskyblue','lightslategray',
+          'lightsteelblue','lightyellow','lime','limegreen','linen','magenta','maroon','mediumaquamarine','mediumblue',
+          'mediumorchid','mediumpurple','mediumseagreen','mediumslateblue','mediumspringgreen','mediumturquoise',
+          'mediumvioletred','midnightblue','mintcream','mistyrose','moccasin','navajowhite','navy','oldlace','olive',
+          'olivedrab','orange','orangered','orchid','palegoldenrod','palegreen','paleturquoise','palevioletred',
+          'papayawhip','peachpuff','peru','pink','plum','powderblue','purple','red','rosybrown','royalblue','saddlebrown',
+          'salmon','sandybrown','seagreen','seashell','sienna','silver','skyblue','slateblue','slategray','snow',
+          'springgreen','steelblue','tan','teal','thistle','tomato','turquoise','violet','wheat','white','whitesmoke'
+          ,'yellow','yellowgreen']
+    animals = ['Canidae', 'Felidae', 'Cat', 'Cattle', 'Dog', 'Donkey', 'Goat', 'Horse', 'Pig', 'Rabbit',
+           'Aardvark', 'Aardwolf', 'Albatross', 'Alligator', 'Alpaca', 'Amphibian', 'Anaconda',
+           'Angelfish', 'Anglerfish', 'Ant', 'Anteater', 'Antelope', 'Antlion', 'Ape', 'Aphid',
+           'Armadillo', 'Asp', 'Baboon', 'Badger', 'Bandicoot', 'Barnacle', 'Barracuda', 'Basilisk',
+           'Bass', 'Bat', 'Bear', 'Beaver', 'Bedbug', 'Bee', 'Beetle', 'Bird', 'Bison', 'Blackbird',
+           'Boa', 'Boar', 'Bobcat', 'Bobolink', 'Bonobo', 'Bovid', 'Bug', 'Butterfly', 'Buzzard',
+           'Camel', 'Canid', 'Capybara', 'Cardinal', 'Caribou', 'Carp', 'Cat', 'Catshark',
+           'Caterpillar', 'Catfish', 'Cattle', 'Centipede', 'Cephalopod', 'Chameleon', 'Cheetah',
+           'Chickadee', 'Chicken', 'Chimpanzee', 'Chinchilla', 'Chipmunk', 'Clam', 'Clownfish',
+           'Cobra', 'Cockroach', 'Cod', 'Condor', 'Constrictor', 'Coral', 'Cougar', 'Cow', 'Coyote',
+           'Crab', 'Crane', 'Crawdad', 'Crayfish', 'Cricket', 'Crocodile', 'Crow', 'Cuckoo', 'Cicada',
+           'Damselfly', 'Deer', 'Dingo', 'Dinosaur', 'Dog', 'Dolphin', 'Donkey', 'Dormouse', 'Dove',
+           'Dragonfly', 'Dragon', 'Duck', 'Eagle', 'Earthworm', 'Earwig', 'Echidna', 'Eel', 'Egret',
+           'Elephant', 'Elk', 'Emu', 'Ermine', 'Falcon', 'Ferret', 'Finch', 'Firefly', 'Fish',
+           'Flamingo', 'Flea', 'Fly', 'Flyingfish', 'Fowl', 'Fox', 'Frog', 'Gamefowl', 'Galliform',
+           'Gazelle', 'Gecko', 'Gerbil', 'Gibbon', 'Giraffe', 'Goat', 'Goldfish', 'Goose', 'Gopher',
+           'Gorilla', 'Grasshopper', 'Grouse', 'Guan', 'Guanaco', 'Guineafowl', 'Gull', 'Guppy',
+           'Haddock', 'Halibut', 'Hamster', 'Hare', 'Harrier', 'Hawk', 'Hedgehog', 'Heron', 'Herring',
+           'Hippopotamus', 'Hookworm', 'Hornet', 'Horse', 'Hoverfly', 'Hummingbird', 'Hyena', 'Iguana',
+           'Impala', 'Jackal', 'Jaguar', 'Jay', 'Jellyfish', 'Junglefowl', 'Kangaroo', 'Kingfisher',
+           'Kite', 'Kiwi', 'Koala', 'Koi', 'Krill', 'Ladybug', 'Lamprey', 'Landfowl', 'Lark', 'Leech',
+           'Lemming', 'Lemur', 'Leopard', 'Leopon', 'Limpet', 'Lion', 'Lizard', 'Llama', 'Lobster',
+           'Locust', 'Loon', 'Louse', 'Lungfish', 'Lynx', 'Macaw', 'Mackerel', 'Magpie', 'Mammal',
+           'Manatee', 'Mandrill', 'Marlin', 'Marmoset', 'Marmot', 'Marsupial', 'Marten', 'Mastodon',
+           'Meadowlark', 'Meerkat', 'Mink', 'Minnow', 'Mite', 'Mockingbird', 'Mole', 'Mollusk',
+           'Mongoose', 'Monkey', 'Moose', 'Mosquito', 'Moth', 'Mouse', 'Mule', 'Muskox', 'Narwhal',
+           'Newt', 'Nightingale', 'Ocelot', 'Octopus', 'Opossum', 'Orangutan', 'Orca', 'Ostrich',
+           'Otter', 'Owl', 'Ox', 'Panda', 'Panther', 'Parakeet', 'Parrot', 'Parrotfish', 'Partridge',
+           'Peacock', 'Peafowl', 'Pelican', 'Penguin', 'Perch', 'Pheasant', 'Pig', 'Pigeon', 'Pike',
+           'Pinniped', 'Piranha', 'Planarian', 'Platypus', 'Pony', 'Porcupine', 'Porpoise', 'Possum',
+           'Prawn', 'Primate', 'Ptarmigan', 'Puffin', 'Puma', 'Python', 'Quail', 'Quelea', 'Quokka',
+           'Rabbit', 'Raccoon', 'Rat', 'Rattlesnake', 'Raven', 'Reindeer', 'Reptile', 'Rhinoceros',
+           'Roadrunner', 'Rodent', 'Rook', 'Rooster', 'Roundworm', 'Sailfish', 'Salamander', 'Salmon',
+           'Sawfish', 'Scallop', 'Scorpion', 'Seahorse', 'Shark', 'Sheep', 'Shrew', 'Shrimp',
+           'Silkworm', 'Silverfish', 'Skink', 'Skunk', 'Sloth', 'Slug', 'Smelt', 'Snail', 'Snake',
+           'Snipe', 'Sole', 'Sparrow', 'Spider', 'Spoonbill', 'Squid', 'Squirrel', 'Starfish',
+           'Stingray', 'Stoat', 'Stork', 'Sturgeon', 'Swallow', 'Swan', 'Swift', 'Swordfish',
+           'Swordtail', 'Tahr', 'Takin', 'Tapir', 'Tarantula', 'Tarsier', 'Termite', 'Tern', 'Thrush',
+           'Tick', 'Tiger', 'Tiglon', 'Toad', 'Tortoise', 'Toucan', 'Trout', 'Tuna', 'Turkey',
+           'Turtle', 'Tyrannosaurus', 'Urial', 'Vicuna', 'Viper', 'Vole', 'Vulture', 'Wallaby',
+           'Walrus', 'Wasp', 'Warbler', 'Weasel', 'Whale', 'Whippet', 'Whitefish', 'Wildcat',
+           'Wildebeest', 'Wildfowl', 'Wolf', 'Wolverine', 'Wombat', 'Woodpecker', 'Worm', 'Wren',
+           'Xerinae', 'Yak', 'Zebra', 'Alpaca', 'Cat', 'Cattle', 'Chicken', 'Dog', 'Donkey', 'Ferret',
+           'Gayal', 'Goldfish', 'Guppy', 'Horse', 'Koi', 'Llama', 'Sheep', 'Yak']
+    
+    ## Provides extra data for every node in the tree ##
+    wrapped_module = MetadataWrapper(original_cst)
+    ## Traverse tree with transformer subclass ##
+    vars_renamed = wrapped_module.visit(VarRename())
+    print("Variables renamed...")
+    funcs_renamed=vars_renamed.visit(FuncRename())
+    print("Functions renamed...")
+    func_calls_renamed=funcs_renamed.visit(CallRename())
+    print("Function calls renamed...")
+    
+    output_filename = str(str(path.stem)+"_RENAMED_"+str(i+1)+".py")
+    modified_code=func_calls_renamed.code
+    ## Write the newly modified code to a new file
+    with open(str(str(output_path)+"\\"+output_filename), "w") as output_file:
+        output_file.write(modified_code)
+    output_file.close()
+    
+    print(f"'{output_filename}' generated...")
+    print("\n")
 
-## Write the newly modified code to a new file ##
-output_filename = str(str(path.stem)+"_RENAMED.py")
-with open(output_filename, "w") as output_file:
-    output_file.write(modified_code)
-output_file.close()
-print(f"Output generated, look for {output_filename} in current directory.")
-
-
-
-
-
+print(f"Finished! '{n_param}' semantic clones generated.")
+print("Please ignore the \"log messages\" error below (if you see it), it is caused by a dependency of the gen AI library and currently isn't fixed.\n")
