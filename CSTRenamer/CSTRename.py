@@ -56,7 +56,10 @@ Get N-Param
 while True:
     try:
         n_param = int(input("Number of clones to generate: "))
-        break
+        if n_param > 0:
+          break
+        else:
+          print("Number of clones must be positive!")
     except ValueError:
         print("Not an integer!")
 
