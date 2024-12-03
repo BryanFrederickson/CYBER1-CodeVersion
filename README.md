@@ -16,25 +16,24 @@ This project is meant to help signature-based intrusion detection by being able 
 
 Rough prototypes can be found in the `python_notebook_tests` branch, which has been kept separate to ensure that main contains only accessible, functional code.
 
-## Installation
-
-### Prerequisites
+## CSTRenamer
+#### Prerequisites
 These instructions are written for modern Windows. For installing prerqs on Windows, run Command Prompt as administrator.
-1. Python3 - Can be installed in multiple ways. The easiest way for Windows is via [installers](https://www.python.org/downloads/windows/). Check it's installed via ```python --version``` in powershell/command line.
-2. LibCST - Installed in command line/powershell using ```pip install libcst```
-3. Gemini API - Installed via command line/powershell using ```pip install -U google-generativeai```
+1. Python3 - Can be installed in multiple ways. The easiest way for Windows is via [installers](https://www.python.org/downloads/windows/). Check it's installed via `python --version` in powershell/command line and that the python installation was added to PATH environment variable.
+2. LibCST - Installed in command line/powershell using `pip install libcst`
+3. Gemini API - Installed via command line/powershell using `pip install -U google-generativeai`
+
+#### Installation and General Use
+1. Download the CSTRename.py file in the CSTRenamer folder on the main branch.
+2. For modern Windows, run the Command Prompt with no administrator. This can be done in the folder with `CSTRename.py` so the command is simply `python CSTRename.py` or, if the Command Prompt is run from a different location, schift right click `CSTRename.py` and "copy as path", then paste into the Command Prompt via right click as `python path/to/file/CSTRename.py`.
+3. Follow the in-terminal prompts to generate renamed code.
+
+The user can specify the location of the input Python source file (only one is supported at a time), then the amount of unique clones to generate, the probabilities for variables or functions being renamed, and then the location to save the output files to. The output files have the naming scheme of `[original name]_RENAMED_[count].py`. For example, using the "func-names-complex.py" test file in the Python notebooks test branch, the second output would be `func-names-complex_RENAMED_1.py`.
 
 ### Add-ons
 
 TODO: List which add-ons are included in the project, and the purpose each add-on serves in your app.
 - As of Sprint 2, rough algorithmic testing is still being done. A user-friendly and acccessible program will be developed in Sprint 3, with the instructions for use being updated here.
-
-### Installation Steps
-
-TODO: Describe the installation process (making sure you mention `bundle install`).
-Instructions need to be such that a user can just copy/paste the commands to get things set up and running. 
-- As of Sprint 2, rough algorithmic testing is still being done. A user-friendly and acccessible program will be developed in Sprint 3, with the instructions for use being updated here.
-
 
 ## Functionality
 
