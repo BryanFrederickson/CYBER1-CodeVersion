@@ -1,1 +1,3 @@
 The `python-notebook-tests` branch contains a python notebook walkthrough of the [CST Renamer](https://github.com/BryanFrederickson/CYBER1-CodeVersion/blob/main/CSTRenamer/CSTRename.py) found in the main branch, as well as an example test file made to test the Renamer's coverage of function or variable use cases (e.g. nested variable calls in `first.second.third` or function redefinitions and import aliases). For more information on the CST Renamer and the project in general, please navigate to the [main branch](https://github.com/BryanFrederickson/CYBER1-CodeVersion/tree/main).
+
+The `.ipynb` is made to be run in Google Colab and is not tested with other Python Notebook IDEs.
