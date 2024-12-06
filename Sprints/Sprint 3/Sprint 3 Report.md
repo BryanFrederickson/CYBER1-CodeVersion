@@ -1,6 +1,6 @@
 # Sprint 3 Report (Dates from Sprint 2 to Sprint 3)
 
-Sprint 3 Demo Video
+[Sprint 3 Demo Video](https://www.youtube.com/watch?v=GbDYehnC3po)
 
 ## What's New (User Facing)
 * Command Prompt (Windows) Terminal Implementation of CST Renamer (in `main` branch)
