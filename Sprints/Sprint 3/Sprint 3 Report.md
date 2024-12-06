@@ -24,9 +24,9 @@ Here are links to the issues that we completed in this sprint:
  Here are links to issues we worked on but did not complete in this sprint:
 
  * #3  - [Create a UI for Python file parameter input](https://github.com/BryanFrederickson/CYBER1-CodeVersion/issues/3)
- - Left as simple text imput for Command Prompt and as built-in file upload for Google Colab.
+   - Left as simple text imput for Command Prompt and as built-in file upload for Google Colab.
  * #14 - [Create a base GUI window](https://github.com/BryanFrederickson/CYBER1-CodeVersion/issues/14)
- - A detailed GUI was deemed a stretch goal as we prioritized covering edge cases in the CST Renamer itself. The GUI is limited to typing parameters into the terminal for both implementations.
+   - A detailed GUI was deemed a stretch goal as we prioritized covering edge cases in the CST Renamer itself. The GUI is limited to typing parameters into the terminal for both implementations.
 
 
 ## Code Files for Review
