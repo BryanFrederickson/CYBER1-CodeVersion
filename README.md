@@ -54,6 +54,10 @@ Sprint 2 Deliverables:
   * [Sprint 2 Report](https://github.com/BryanFrederickson/CYBER1-CodeVersion/blob/6e0719cde0e0347c24d3416c51d3eb0ba2188fb2/Sprints/Sprint%202/Sprint%202%20Report.md)
   * [Sprint 2 Video](https://youtu.be/h4OGVBQQoWc)
 
+Sprint 3 Deliverables:
+  * [Sprint 3 Report](https://github.com/BryanFrederickson/CYBER1-CodeVersion/blob/main/Sprints/Sprint%203/Sprint%203%20Report.md)
+  * [Sprint 3 Video](https://www.youtube.com/watch?v=I8yIiHRUb8E)
+
 ## License
 
 [License](./LICENSE)
