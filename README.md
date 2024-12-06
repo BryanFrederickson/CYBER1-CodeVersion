@@ -30,28 +30,13 @@ These instructions are written for modern Windows. For installing prerqs on Wind
 
 The user can specify the location of the input Python source file (only one is supported at a time), then the amount of unique clones to generate, the probabilities for variables or functions being renamed, and then the location to save the output files to. The output files have the naming scheme of `[original name]_RENAMED_[count].py`. For example, using the "func-names-complex.py" test file in the Python notebooks test branch, the second output would be `func-names-complex_RENAMED_1.py`.
 
-### Add-ons
+#### Known Problems
+- Due to the Gemini API key being linked to a free account, errors in requesting synonyms due to maxing out the API call limit print to the terminal (with additional warnings showing up in the Google Colab implementation). Since these errors are largely cosmetic (since an animal wordbank is used as a backup), they can be ignored.
+- In the python Command Prompt implementation, there is an additional warning at the end of execution warning about error output being sent to STDERR instead. This is because of a dependency required for the Gemini API python library and is not fixed as of 11/30/2024, but does not seem to cause any actual running issues.
 
-TODO: List which add-ons are included in the project, and the purpose each add-on serves in your app.
-- As of Sprint 2, rough algorithmic testing is still being done. A user-friendly and acccessible program will be developed in Sprint 3, with the instructions for use being updated here.
-
-## Functionality
-
-TODO: Write usage instructions. Structuring it as a walkthrough can help structure this section,
-and showcase your features.
-- As of Sprint 2, rough algorithmic testing is still being done. A user-friendly and acccessible program will be developed in Sprint 3, with the instructions for use being updated here.
-
-
-## Known Problems
-
-TODO: Describe any known issues, bugs, odd behaviors or code smells. 
-Provide steps to reproduce the problem and/or name a file or a function where the problem lives.
-- As of Sprint 2, rough algorithmic testing is still being done. A user-friendly and acccessible program will be developed in Sprint 3, with the instructions for use being updated here.
 
 
 ## Contributing
-
-TODO: Leave the steps below if you want others to contribute to your project.
 
 1. Fork it!
 2. Create your feature branch: `git checkout -b my-new-feature`
