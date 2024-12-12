@@ -58,6 +58,9 @@ Sprint 3 Deliverables:
   * [Sprint 3 Report](https://github.com/BryanFrederickson/CYBER1-CodeVersion/blob/main/Sprints/Sprint%203/Sprint%203%20Report.md)
   * [Sprint 3 Video](https://www.youtube.com/watch?v=I8yIiHRUb8E)
 
+End of Semester 1 In-Class Presentation:
+  * [Presentation Video](https://www.youtube.com/watch?v=1ktzkDxGp1U)
+
 ## License
 
 [License](./LICENSE)
