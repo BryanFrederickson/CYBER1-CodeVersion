@@ -37,17 +37,13 @@ Here are links to the issues that we completed in this sprint:
 ## Code Files for Review
 Please review the following code files, which were actively developed during this sprint, for quality (found in python-notebook-tests branch):
  * [CS421_Project_CYBER1_CodeVersion.ipynb](https://github.com/BryanFrederickson/CYBER1-CodeVersion/blob/python-notebook-tests/CS421_Project_CYBER1_CodeVersion.ipynb)
- * [CSTRename.py](https://github.com/BryanFrederickson/CYBER1-CodeVersion/blob/main/CSTRenamer/CSTRename.py)
  
 ## Retrospective Summary
 Here's what went well:
-  * Communication was great between the team. Comments surrounding code snippets helped team understand the functionality and implementations of solutions so we could test functional components in conjunction with each other.
-  * Google Colab was very organized and well documented to show a step by step iteration of how the Cyber1 - CodeVersion performs in a linear step fashion.
+  * 
  
 Here's what we'd like to improve:
-   * While we do have a great method for backup synonym renaming using lists of animals and colors, the team will explore better methods than the Gemini API which gets exausted relatively quickly.
-   * The team plans to improve understanding and allocate more time to research newly focused topics that was introduced by our client.
+   * 
   
 Here are changes we plan to implement in the next sprint:
-   * Instead of utilizing AST and CST structures, the team plans to explore Property Graphs as well as genetic algorithms to help develop semantic clones.
-   * More focus will be allocated for the UI design to allow the Cybersecurity professioanl to efficiently interact with the tool.
+   * 
