@@ -1,32 +1,37 @@
-# Sprint 3 Report (11/05/24 - 12/05/24)
+# Sprint 4 Report (1/10/25 - 2/10/25)
 
-[Sprint 3 Demo Video](https://www.youtube.com/watch?v=I8yIiHRUb8E)
+Sprint 4 Demo Video TO BE ADDED
 
 ## What's New (User Facing)
-* Command Prompt (Windows) Terminal Implementation of CST Renamer (in `main` branch)
-* Google Colab Notebook Implementation of CST Renamer (in `python-notebook-tests` branch)
+* 
 
 ## Work Summary (Developer Facing)
-Finished full CST renamer, with both a Command Prompt and Google Colab Notebook implementation (with the main difference being the way files are saved). N-parameter and multiple unique outputs are supported, with nondeterministic generation by specifying the probabilities a variabel or function is renamed for that specific run. In the Command Prompt, an input file path and output file path can be parsed and accessed.
+
 
 ## Unfinished Work
-Stretch goals such as more complex CST manipulations (e.g. converting `for` loops to `while` loops and vice versa) were not reached. A more involved GUI was deemed unecesseary compared to making sure the CST Renamer fully functioned and covered as many edge cases as possible.
+
 
 ## Completed Issues/User Stories
 Here are links to the issues that we completed in this sprint:
 
- * #1  - [Unique N Permutations](https://github.com/BryanFrederickson/CYBER1-CodeVersion/issues/1)
- * #17 - [Auto Rename Variables](https://github.com/BryanFrederickson/CYBER1-CodeVersion/issues/17)
- * #18 - [Google Gemini Synonym Generation (Variables)](https://github.com/BryanFrederickson/CYBER1-CodeVersion/issues/18)
- * #19 - [Google Gemini Synonym Generation (Functions)](https://github.com/BryanFrederickson/CYBER1-CodeVersion/issues/19)
+ * #20  - [Understand Code Property Graph Significance](https://github.com/BryanFrederickson/CYBER1-CodeVersion/issues/20)
+   - Part of research into alternate methods of manipulating source code that did not pan out. Closed as Code Property Graphs are not manipulable and cannot be converted back into source code using existing software. Work will be done solely using Concrete Syntax Trees.
+ * #21 - [Research Control Flow Graph](https://github.com/BryanFrederickson/CYBER1-CodeVersion/issues/21)
+   - See above. Control Flow Graphs do not present enough benefits over Concrete Syntax Trees to justify switching over or adding the new, unfamiliar data type. Work will be done solely using Concrete Syntax Trees.
+ * #22 - [Python Library Exploration](https://github.com/BryanFrederickson/CYBER1-CodeVersion/issues/22)
+   - See both above issues, as they comprise the main goal of this issue.
  
  ## Incomplete Issues/User Stories
  Here are links to issues we worked on but did not complete in this sprint:
 
  * #3  - [Create a UI for Python file parameter input](https://github.com/BryanFrederickson/CYBER1-CodeVersion/issues/3)
-   - Left as simple text imput for Command Prompt and as built-in file upload for Google Colab.
+   - After basic terminal implementation was finished last sprint, more obfuscation techniques were prioritized over a new GUI implementation. After issues with Google Colab and translation library packages arose, it is now planned to begin developing a GUI with tkinter in the next sprint.
  * #14 - [Create a base GUI window](https://github.com/BryanFrederickson/CYBER1-CodeVersion/issues/14)
-   - A detailed GUI was deemed a stretch goal as we prioritized covering edge cases in the CST Renamer itself. The GUI is limited to typing parameters into the terminal for both implementations.
+   - See above.
+ * #23 - [Translate Variable/Function Names](https://github.com/BryanFrederickson/CYBER1-CodeVersion/issues/23)
+   - A Variable/Funtion Name parser was developed, that can break the strings down into individual tokens based on common naming conventions (camelCase, snake_case, etc.) and also turn common abbreviations in coding into their full terms. However, translation ran into issues with limited API tokens and then lengthy installs for offline translation packages. The latter is the reason a GUI is now being prioritized, so that the installation can be done once rather than for each Colab runtime.
+ * #24 = [Logic Obfuscation](https://github.com/BryanFrederickson/CYBER1-CodeVersion/issues/24)
+   - Developing a way to swap out loop types (for, while, etc.) has had several edge cases to account for that have impeded development time, so the feature was not fully completed this sprint.
 
 
 ## Code Files for Review
