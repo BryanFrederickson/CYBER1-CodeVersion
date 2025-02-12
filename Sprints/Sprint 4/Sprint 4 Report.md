@@ -1,6 +1,6 @@
 # Sprint 4 Report (1/10/25 - 2/10/25)
 
-[Sprint 4 Demo Video](NEWLINK)
+[Sprint 4 Demo Video](https://www.youtube.com/watch?v=KbjT55ulSEI)
 
 ## What's New (User Facing)
 * Variable/Function token parsing to replace gemini API prompting approach
