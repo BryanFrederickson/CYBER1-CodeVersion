@@ -63,7 +63,7 @@ End of Semester 1 Documentation:
   * [CYBER1 Project Report](https://github.com/BryanFrederickson/CYBER1-CodeVersion/blob/main/Resources/CYBER1%20Project%20Report%20End%20of%20Semester%201.pdf)
 
 Sprint 4 Deliverables:
-* [Sprint 4 Report]()
+* [Sprint 4 Report](https://github.com/BryanFrederickson/CYBER1-CodeVersion/blob/main/Sprints/Sprint%204/Sprint%204%20Report.md)
 * [Sprint 4 Video](https://www.youtube.com/watch?v=KbjT55ulSEI)
 
 ## License
