@@ -1,14 +1,19 @@
 # Sprint 4 Report (1/10/25 - 2/10/25)
 
-Sprint 4 Demo Video TO BE ADDED
+[Sprint 4 Demo Video](NEWLINK)
 
 ## What's New (User Facing)
-* 
+* Variable/Function token parsing to replace gemini API prompting approach
+* Logic obfuscation techniques such as while loops to for loops
+  
 
 ## Work Summary (Developer Facing)
+Cases using the greater than and less than operator in while loops with the variable switching on LHS or RHS of expression is covered for logic obfuscation. Variable and function renamer offers tokenization to seperate words based on different types of coding syntax (camelCase, snake_case, etc.). 
+
 
 
 ## Unfinished Work
+Logic obfuscation techniques require a number of specific edge cases. Implementation of vise versa needs to be covered as well as if statement obfuscation. Variable parser requires API tokens, runtime in Colab files requires a pretty hefty install. Work on making process simpler for those who want to utlize the software. GUI has been put on backburner, start working on integrating UI framework.
 
 
 ## Completed Issues/User Stories
@@ -40,10 +45,10 @@ Please review the following code files, which were actively developed during thi
  
 ## Retrospective Summary
 Here's what went well:
-  * 
+  * Team did a great job at distributing tasks for the current Sprint. Research on Control Flow Graphs and Property Graphs allowed team to understand the limits of future implementation and to focus on current CST methods.
  
 Here's what we'd like to improve:
-   * 
+   * As the capstone requires a UI for users to interact with, more focus should be put on designing and interface that is convenient for others who want to utilize the tool.
   
 Here are changes we plan to implement in the next sprint:
-   * 
+   * Next sprint, we plan to have a baseline or clear framework of how the user will interact with our system from a visual perspective. Function/Variable parsing will be more effecient, and more methods of logic obfuscation will be integrated.
