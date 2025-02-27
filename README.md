@@ -34,7 +34,16 @@ The user can specify the location of the input Python source file (only one is s
 - Due to the Gemini API key being linked to a free account, errors in requesting synonyms due to maxing out the API call limit print to the terminal (with additional warnings showing up in the Google Colab implementation). Since these errors are largely cosmetic (since an animal wordbank is used as a backup), they can be ignored.
 - In the python Command Prompt implementation, there is an additional warning at the end of execution warning about error output being sent to STDERR instead. This is because of a dependency required for the Gemini API python library and is not fixed as of 11/30/2024, but does not seem to cause any actual running issues.
 
+## Argos Translate Language Installer
+This program is made to help install specific offline translation packages from Argos Translate for use in Variable and Function Obfuscation.
 
+#### Prerequisites
+These instructions are written primarily for modern Windows. For installing prerqs on Windows, run Command Prompt as administrator.
+1. Python3 - Can be installed in multiple ways. The easiest way for Windows is via [installers](https://www.python.org/downloads/windows/). Check it's installed via `python --version` in terminal/command line and that the python installation was added to PATH environment variable.
+2. [Argos Translate](https://github.com/argosopentech/argos-translate) - A library for offline language translation in Python. To install, simply run `pip install argostranslate` (more info in linked Repo).
+
+#### Installation and General Use
+1.
 
 ## Contributing
 
