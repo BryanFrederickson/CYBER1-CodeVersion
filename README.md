@@ -40,10 +40,13 @@ This program is made to help install specific offline translation packages from 
 #### Prerequisites
 These instructions are written primarily for modern Windows. For installing prerqs on Windows, run Command Prompt as administrator.
 1. Python3 - Can be installed in multiple ways. The easiest way for Windows is via [installers](https://www.python.org/downloads/windows/). Check it's installed via `python --version` in terminal/command line and that the python installation was added to PATH environment variable.
-2. [Argos Translate](https://github.com/argosopentech/argos-translate) - A library for offline language translation in Python. To install, simply run `pip install argostranslate` (more info in linked Repo).
+2. tkinter - The Python library used to render a GUI for our programs. The library is usually included with Python installs, but you can check via `pip install tk` on Windows or `sudo apt-get install python3-tk` on Ubuntu.
+3. [Argos Translate](https://github.com/argosopentech/argos-translate) - A library for offline language translation in Python. To install, simply run `pip install argostranslate` (more info in linked Repo).
 
 #### Installation and General Use
-1.
+1. Navigate to the [`Langs_Installer`](https://github.com/BryanFrederickson/CYBER1-CodeVersion/tree/76643a49d483dd935053f1e334928d436a46c7b2/Langs_Installer) folder on the Main Branch and download all of the files inside. Make sure when running any of the Python files that they are all in the same directory on your system.
+2. `ArgosTranslate_PreReqs_Installer.py`/`ArgosTranslate_PreReqs_Installer_support.py` - Due to the way the GUI's frontend (main file) and backend (`*_support.py`) work, running either file will work. This program will let the user pick and choose from available language packages and automatically install them for the user. `ScrolledCheckedListBox.py` is a dependency and does nothing on its own, serving as a custom tkinter widget for making a scrollable checklist.
+3. `ArgosTranslate_Installed_Langs.py` - This file does not contain a GUI and the code must be manually configured (commenting out options) to run as desired. The python script can be used to uninstall all installed Argos Translate language packages as well as simply print all packages currently installed.
 
 ## Contributing
 
