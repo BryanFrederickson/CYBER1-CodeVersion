@@ -247,6 +247,7 @@ class Toplevel1:
             relx=0.0, rely=0.0, relheight=1.013, relwidth=0.997
         )
         self.C_outputTextScrolled.configure(wrap="word")
+        self.C_outputTextScrolled.configure(state="disabled")
 
         self.F_langs.tkraise()
 

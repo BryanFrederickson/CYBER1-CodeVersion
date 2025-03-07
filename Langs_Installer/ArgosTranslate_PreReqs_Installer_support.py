@@ -97,6 +97,17 @@ def on_btnGetChecks(*args):
     print(lst)
 """
 
+def print_to_outputText(input:str):
+    w.C_outputTextScrolled.configure(state="normal")
+    w.C_outputTextScrolled.insert(
+        tk.END,
+        input,
+    )
+    w.C_outputTextScrolled.see(tk.END)
+    w.C_outputTextScrolled.configure(state="disabled")
+    root.update()
+    root.after(20)
+
 
 # see ScrolledCheckedListBox for added 'select all' functionality
 def selectAll(*args):
@@ -141,26 +152,13 @@ def install_Langs():
     root.after(200)
     selected_langs = w.C_scrolledChecklist.get()
     for lang_pair in selected_langs:
-        w.C_outputTextScrolled.insert(tk.END, f"Installing {lang_pair}\n")
-        w.C_outputTextScrolled.see(tk.END)
+        print_to_outputText(f"Installing {lang_pair}\n")
         curr_package = bothway_langs[lang_pair][0]
-        w.C_outputTextScrolled.insert(
-            tk.END,
-            f" - Installing {curr_package.from_name} -> {curr_package.to_name}\n",
-        )
-        w.C_outputTextScrolled.see(tk.END)
-        root.update()
-        root.after(50)
+        print_to_outputText(f" - Installing {curr_package.from_name} -> {curr_package.to_name}\n")
         argostranslate.package.install_from_path(curr_package.download())
         curr_package = bothway_langs[lang_pair][1]
-        w.C_outputTextScrolled.insert(
-            tk.END,
-            f" - Installing {curr_package.from_name} -> {curr_package.to_name}\n",
-        )
-        w.C_outputTextScrolled.see(tk.END)
+        print_to_outputText(f" - Installing {curr_package.from_name} -> {curr_package.to_name}\n")
         argostranslate.package.install_from_path(curr_package.download())
-        root.update()
-        root.after(50)
     w.L_installStatus.configure(
         font="-family {Segoe UI} -size 12 -weight bold -slant italic",
         text="Installation Complete.",
