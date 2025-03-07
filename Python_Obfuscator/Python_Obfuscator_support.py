@@ -11,6 +11,15 @@ from ScrolledCheckedListBox import ScrolledCheckedListBox
 import tkinter.scrolledtext as st
 from tkinter import filedialog
 import os
+import ast as ast  # for testing validity of Python file
+import libcst as cst  # LibCST library for editing source code
+from libcst.metadata import (
+    MetadataWrapper,
+    ParentNodeProvider,
+)  # for in-depth cst node parsing
+import random  # used for randomly choosing placeholder names
+import re  # for regular expressions
+import string
 
 import argostranslate.package
 
@@ -28,6 +37,7 @@ def init_params():
     params["input_filename"] = ""
     params["input_data"] = ""
     params["output_dir"] = ""
+    params["original_cst"] = ""
 
     params["clones_min"] = 1
     params["clones_max"] = 20
@@ -73,11 +83,13 @@ def main(*args):
 Custom = ScrolledCheckedListBox
 Custom2 = st.ScrolledText
 
+
 def disable_genButton():
     _w1.B_generate.configure(background="#809296")
     _w1.B_generate.configure(disabledforeground="#4c5659")
     _w1.B_generate.configure(state="disabled")
     _w1.B_validate.configure(state="normal")
+
 
 def init_langs():
     installed_packages = argostranslate.package.get_installed_packages()
@@ -187,7 +199,7 @@ def bind_entries():
         ),
     )
 
-    _w1.CB_inLang.bind('<<ComboboxSelected>>', lambda event: disable_genButton())
+    _w1.CB_inLang.bind("<<ComboboxSelected>>", lambda event: disable_genButton())
 
 
 # for input entries, shows if input is valid for being an
@@ -275,12 +287,31 @@ def validate_params():
             all_params_valid = False
             _w1.LF_inputFile.configure(foreground="#d70005")
         else:
-            _w1.L_inputError.configure(text="")
-            _w1.LF_inputFile.configure(foreground="#000000")
-            # check syntactic correctness
-            print("blah")
+            # see if file is syntactically correct
+            try:
+                ast.parse(params["input_data"])
+                _w1.L_valError.configure(
+                    font="-family {Segoe UI} -size 9 -weight bold"
+                )
+                _w1.L_valError.configure(foreground="#000000")
+                _w1.L_valError.configure(
+                    text=f"{params['input_filename']} is syntactically valid."
+                )
+                params["original_cst"] = cst.parse_module(params["input_data"])
+                _w1.LF_inputFile.configure(foreground="#000000")
+            except SyntaxError as error:
+                all_params_valid = False
+                _w1.L_valError.configure(
+                    font="-family {Segoe UI} -size 9 -weight bold"
+                )
+                _w1.L_valError.configure(foreground="#d70005")
+                _w1.L_valError.configure(
+                    text=f"Syntax error in {params['input_filename']}: {error}"
+                )
+                _w1.LF_inputFile.configure(foreground="#d70005")
     elif not params["input_filename"]:
         _w1.LF_inputFile.configure(foreground="#d70005")
+        all_params_valid = False
     else:
         _w1.L_inputError.configure(text="")
         _w1.LF_inputFile.configure(foreground="#000000")
@@ -292,29 +323,31 @@ def validate_params():
             _w1.L_outputError.configure(text="No directory selected.")
             all_params_valid = False
         elif not params["clones_count_valid"]:
-            _w1.LF_outputFiles.configure(foreground="#d70005")
+            _w1.L_outputCount.configure(foreground="#d70005")
             _w1.L_outputError.configure(text="Invalid clone count.")
             all_params_valid = False
         else:
+            _w1.L_outputCount.configure(foreground="#000000")
             _w1.LF_outputFiles.configure(foreground="#000000")
             _w1.L_outputError.configure(text="")
     elif not params["output_dir"]:
         _w1.LF_outputFiles.configure(foreground="#d70005")
+        all_params_valid = False
     else:
         _w1.LF_outputFiles.configure(foreground="#000000")
         _w1.L_outputError.configure(text="")
 
     # check logic obfuscation params
-    '''
+    """
     cannot figure out why logic Obfsc LabelFrame doesn't visually update 
     with the color no matter where in this ENTIRE file I try to call it.
     literally every other label frame works.
     _w1.LF_logicObfsc["foreground"]="#d70005" but it doesn't update
-    '''
+    """
     if not params["logic_percent_valid"]:
         _w1.LF_logicObfsc.configure(foreground="#d70005")
-        #root.update() # doesn't work either
-        #root.after(1)
+        # root.update() # doesn't work either
+        # root.after(1)
         _w1.L_logicObfscProb.configure(foreground="#d70005")
         all_params_valid = False
     else:
@@ -326,16 +359,16 @@ def validate_params():
 
     if not params["func_percent_valid"]:
         translation_error_full += "Invalid Function probability. "
-        _w1.LF_transProbs.configure(foreground="#d70005")
+        _w1.L_transFunc.configure(foreground="#d70005")
         all_params_valid = False
     else:
-        _w1.LF_transProbs.configure(foreground="#000000")
+        _w1.L_transFunc.configure(foreground="#000000")
     if not params["vars_percent_valid"]:
         translation_error_full += "Invalid Variable probability. "
-        _w1.LF_transProbs.configure(foreground="#d70005")
+        _w1.L_transVar.configure(foreground="#d70005")
         all_params_valid = False
     else:
-        _w1.LF_transProbs.configure(foreground="#000000")
+        _w1.L_transVar.configure(foreground="#000000")
 
     valid_probs_butzero = (
         params["func_percent_valid"]
@@ -350,18 +383,18 @@ def validate_params():
     # AKA if translation not explicitly disabled, check langs
     if not valid_probs_butzero:
         # check source language
-        inlang=_w1.CB_inLang.get()
+        inlang = _w1.CB_inLang.get()
         if not inlang:
             translation_error_full += "No source language. "
             _w1.LF_transInLang.configure(foreground="#d70005")
             all_params_valid = False
         else:
-            params["selected_inputlang"]=inlang
+            params["selected_inputlang"] = inlang
             _w1.LF_transInLang.configure(foreground="#000000")
-        
+
         # check output languages
-        outlangs=_w1.C_transOutLangSelect.get()
-        if len(outlangs)==0:
+        outlangs = _w1.C_transOutLangSelect.get()
+        if len(outlangs) == 0:
             translation_error_full += "No output languages. "
             _w1.LF_transOutLangs.configure(foreground="#d70005")
             all_params_valid = False
@@ -370,15 +403,15 @@ def validate_params():
             _w1.LF_transOutLangs.configure(foreground="#d70005")
             all_params_valid = False
         else:
-            params["selected_outputlangs"]=outlangs.copy()
+            params["selected_outputlangs"] = outlangs.copy()
             _w1.LF_transOutLangs.configure(foreground="#000000")
-    
+
     _w1.L_transError.configure(text=translation_error_full)
 
     if all_params_valid:
-        # if validated, don't need to validate again, so disabled here, 
+        # if validated, don't need to validate again, so disabled here,
         # and allow generation
-        # when any input param is changed, generate button is disabled 
+        # when any input param is changed, generate button is disabled
         # and validate button enabled
         _w1.B_generate.configure(background="#70b2c4")
         _w1.B_generate.configure(state="normal")

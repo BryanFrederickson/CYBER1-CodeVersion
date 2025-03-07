@@ -15,37 +15,44 @@ _location = os.path.dirname(__file__)
 
 import Python_Obfuscator_support
 
-_bgcolor = '#d9d9d9'
-_fgcolor = '#000000'
-_tabfg1 = 'black' 
-_tabfg2 = 'white' 
-_bgmode = 'light' 
-_tabbg1 = '#d9d9d9' 
-_tabbg2 = 'gray40' 
+_bgcolor = "#d9d9d9"
+_fgcolor = "#000000"
+_tabfg1 = "black"
+_tabfg2 = "white"
+_bgmode = "light"
+_tabbg1 = "#d9d9d9"
+_tabbg2 = "gray40"
 
 _style_code_ran = 0
+
+
 def _style_code():
     global _style_code_ran
-    if _style_code_ran: return        
-    try: Python_Obfuscator_support.root.tk.call('source',
-                os.path.join(_location, 'themes', 'default.tcl'))
-    except: pass
+    if _style_code_ran:
+        return
+    try:
+        Python_Obfuscator_support.root.tk.call(
+            "source", os.path.join(_location, "themes", "default.tcl")
+        )
+    except:
+        pass
     style = ttk.Style()
-    style.theme_use('default')
-    style.configure('.', font = "TkDefaultFont")
+    style.theme_use("default")
+    style.configure(".", font="TkDefaultFont")
     if sys.platform == "win32":
-       style.theme_use('winnative')    
+        style.theme_use("winnative")
     _style_code_ran = 1
+
 
 class Toplevel1:
     def __init__(self, top=None):
-        '''This class configures and populates the toplevel window.
-           top is the toplevel containing window.'''
+        """This class configures and populates the toplevel window.
+        top is the toplevel containing window."""
 
         top.geometry("598x400+618+276")
         top.minsize(598, 400)
         top.maxsize(1920, 1060)
-        top.resizable(1,  1)
+        top.resizable(1, 1)
         top.title("Python Obfuscator")
         top.configure(background="#d9d9d9")
         top.configure(highlightbackground="#d9d9d9")
@@ -55,9 +62,8 @@ class Toplevel1:
         self.selected_inLang = tk.StringVar()
 
         self.F_params = tk.Frame(self.top)
-        self.F_params.place(relx=0.017, rely=0.025, relheight=0.948
-                , relwidth=0.968)
-        self.F_params.configure(relief='groove')
+        self.F_params.place(relx=0.017, rely=0.025, relheight=0.948, relwidth=0.968)
+        self.F_params.configure(relief="groove")
         self.F_params.configure(borderwidth="2")
         self.F_params.configure(relief="groove")
         self.F_params.configure(background="#d9d9d9")
@@ -65,13 +71,12 @@ class Toplevel1:
         self.F_params.configure(highlightcolor="#000000")
 
         self.L_params = tk.Label(self.F_params)
-        self.L_params.place(relx=0.017, rely=0.0, relheight=0.08
-                , relwidth=0.6)
+        self.L_params.place(relx=0.017, rely=0.0, relheight=0.08, relwidth=0.6)
         self.L_params.configure(activebackground="#d9d9d9")
         self.L_params.configure(activeforeground="black")
-        self.L_params.configure(anchor='w')
+        self.L_params.configure(anchor="w")
         self.L_params.configure(background="#d9d9d9")
-        self.L_params.configure(compound='left')
+        self.L_params.configure(compound="left")
         self.L_params.configure(disabledforeground="#a3a3a3")
         self.L_params.configure(font="-family {Segoe UI} -size 12 -weight bold")
         self.L_params.configure(foreground="#000000")
@@ -80,8 +85,9 @@ class Toplevel1:
         self.L_params.configure(text="Generation Parameters")
 
         self.B_generate = tk.Button(self.F_params)
-        self.B_generate.place(relx=0.81, rely=0.848, height=46, width=97
-                , bordermode='ignore')
+        self.B_generate.place(
+            relx=0.81, rely=0.848, height=46, width=97, bordermode="ignore"
+        )
         self.B_generate.configure(activebackground="#d9d9d9")
         self.B_generate.configure(activeforeground="black")
         self.B_generate.configure(background="#809296")
@@ -91,12 +97,13 @@ class Toplevel1:
         self.B_generate.configure(foreground="#000000")
         self.B_generate.configure(highlightbackground="#d9d9d9")
         self.B_generate.configure(highlightcolor="#000000")
-        self.B_generate.configure(state='disabled')
+        self.B_generate.configure(state="disabled")
         self.B_generate.configure(text="Generate")
 
         self.B_validate = tk.Button(self.F_params)
-        self.B_validate.place(relx=0.621, rely=0.848, height=46, width=95
-                , bordermode='ignore')
+        self.B_validate.place(
+            relx=0.621, rely=0.848, height=46, width=95, bordermode="ignore"
+        )
         self.B_validate.configure(activebackground="#d9d9d9")
         self.B_validate.configure(activeforeground="black")
         self.B_validate.configure(background="#d9d9d9")
@@ -111,25 +118,30 @@ class Toplevel1:
         self.B_validate.configure(command=Python_Obfuscator_support.validate_params)
 
         self.L_valError = tk.Label(self.F_params)
-        self.L_valError.place(relx=0.02, rely=0.84, height=54, width=340
-                , bordermode='ignore')
+        self.L_valError.place(
+            relx=0.02, rely=0.84, height=54, width=340, bordermode="ignore"
+        )
         self.L_valError.configure(activebackground="#d9d9d9")
         self.L_valError.configure(activeforeground="black")
-        self.L_valError.configure(anchor='nw', justify="left")
+        self.L_valError.configure(anchor="sw", justify="left")
         self.L_valError.configure(background="#d9d9d9")
-        self.L_valError.configure(compound='left')
+        self.L_valError.configure(compound="left")
         self.L_valError.configure(cursor="arrow")
         self.L_valError.configure(disabledforeground="#a3a3a3")
-        self.L_valError.configure(font="-family {Segoe UI} -size 9 -weight bold -underline 1")
+        self.L_valError.configure(
+            font="-family {Segoe UI} -size 9 -weight bold -underline 1"
+        )
         self.L_valError.configure(foreground="#d70005")
         self.L_valError.configure(highlightbackground="#d9d9d9")
         self.L_valError.configure(highlightcolor="#000000")
-        self.L_valError.configure(text="Error:")
+        self.L_valError.configure(text="")
+        self.L_valError.configure(wraplength=340)
 
         self.LF_translation = tk.LabelFrame(self.F_params)
-        self.LF_translation.place(relx=0.397, rely=0.072, relheight=0.746
-                , relwidth=0.586, bordermode='ignore')
-        self.LF_translation.configure(relief='groove')
+        self.LF_translation.place(
+            relx=0.397, rely=0.072, relheight=0.746, relwidth=0.586, bordermode="ignore"
+        )
+        self.LF_translation.configure(relief="groove")
         self.LF_translation.configure(font="-family {Segoe UI} -size 10")
         self.LF_translation.configure(foreground="#000000")
         self.LF_translation.configure(text="Var/Func Name Translation")
@@ -138,11 +150,11 @@ class Toplevel1:
         self.LF_translation.configure(highlightbackground="#d9d9d9")
         self.LF_translation.configure(highlightcolor="#000000")
 
-
         self.LF_transOutLangs = tk.LabelFrame(self.LF_translation)
-        self.LF_transOutLangs.place(relx=0.5, rely=0.09, relheight=0.703
-                , relwidth=0.465, bordermode='ignore')
-        self.LF_transOutLangs.configure(relief='groove')
+        self.LF_transOutLangs.place(
+            relx=0.5, rely=0.09, relheight=0.703, relwidth=0.465, bordermode="ignore"
+        )
+        self.LF_transOutLangs.configure(relief="groove")
         self.LF_transOutLangs.configure(font="-family {Segoe UI} -size 9")
         self.LF_transOutLangs.configure(foreground="#000000")
         self.LF_transOutLangs.configure(text="Output Languages")
@@ -150,14 +162,18 @@ class Toplevel1:
         self.LF_transOutLangs.configure(highlightbackground="#d9d9d9")
         self.LF_transOutLangs.configure(highlightcolor="#000000")
 
-        self.C_transOutLangSelect = Python_Obfuscator_support.Custom(self.LF_transOutLangs)
-        self.C_transOutLangSelect.place(relx=0, rely=0.04, relheight=0.958
-                , relwidth=1, bordermode='inside')
-        
+        self.C_transOutLangSelect = Python_Obfuscator_support.Custom(
+            self.LF_transOutLangs
+        )
+        self.C_transOutLangSelect.place(
+            relx=0, rely=0.04, relheight=0.958, relwidth=1, bordermode="inside"
+        )
+
         self.LF_transProbs = tk.LabelFrame(self.LF_translation)
-        self.LF_transProbs.place(relx=0.029, rely=0.31, relheight=0.483
-                , relwidth=0.45, bordermode='inside')
-        self.LF_transProbs.configure(relief='groove')
+        self.LF_transProbs.place(
+            relx=0.029, rely=0.31, relheight=0.483, relwidth=0.45, bordermode="inside"
+        )
+        self.LF_transProbs.configure(relief="groove")
         self.LF_transProbs.configure(font="-family {Segoe UI} -size 9")
         self.LF_transProbs.configure(foreground="#000000")
         self.LF_transProbs.configure(text="Translation Probabilities")
@@ -166,13 +182,14 @@ class Toplevel1:
         self.LF_transProbs.configure(highlightcolor="#000000")
 
         self.L_transVar = tk.Label(self.LF_transProbs)
-        self.L_transVar.place(relx=0.065, rely=0.557, height=24, width=134
-                , bordermode='ignore')
+        self.L_transVar.place(
+            relx=0.065, rely=0.557, height=24, width=134, bordermode="ignore"
+        )
         self.L_transVar.configure(activebackground="#d9d9d9")
         self.L_transVar.configure(activeforeground="black")
-        self.L_transVar.configure(anchor='w')
+        self.L_transVar.configure(anchor="w")
         self.L_transVar.configure(background="#d9d9d9")
-        self.L_transVar.configure(compound='left')
+        self.L_transVar.configure(compound="left")
         self.L_transVar.configure(disabledforeground="#a3a3a3")
         self.L_transVar.configure(font="-family {Segoe UI} -size 9 -underline 1")
         self.L_transVar.configure(foreground="#000000")
@@ -181,13 +198,14 @@ class Toplevel1:
         self.L_transVar.configure(text="Variables:")
 
         self.L_transFunc = tk.Label(self.LF_transProbs)
-        self.L_transFunc.place(relx=0.065, rely=0.157, height=24, width=134
-                , bordermode='ignore')
+        self.L_transFunc.place(
+            relx=0.065, rely=0.157, height=24, width=134, bordermode="ignore"
+        )
         self.L_transFunc.configure(activebackground="#d9d9d9")
         self.L_transFunc.configure(activeforeground="black")
-        self.L_transFunc.configure(anchor='w')
+        self.L_transFunc.configure(anchor="w")
         self.L_transFunc.configure(background="#d9d9d9")
-        self.L_transFunc.configure(compound='left')
+        self.L_transFunc.configure(compound="left")
         self.L_transFunc.configure(disabledforeground="#a3a3a3")
         self.L_transFunc.configure(font="-family {Segoe UI} -size 9 -underline 1")
         self.L_transFunc.configure(foreground="#000000")
@@ -196,13 +214,14 @@ class Toplevel1:
         self.L_transFunc.configure(text="Functions:")
 
         self.L_transVarRange = tk.Label(self.LF_transProbs)
-        self.L_transVarRange.place(relx=0.065, rely=0.721, height=23, width=54
-                , bordermode='ignore')
+        self.L_transVarRange.place(
+            relx=0.065, rely=0.721, height=23, width=54, bordermode="ignore"
+        )
         self.L_transVarRange.configure(activebackground="#d9d9d9")
         self.L_transVarRange.configure(activeforeground="black")
-        self.L_transVarRange.configure(anchor='e')
+        self.L_transVarRange.configure(anchor="e")
         self.L_transVarRange.configure(background="#d9d9d9")
-        self.L_transVarRange.configure(compound='left')
+        self.L_transVarRange.configure(compound="left")
         self.L_transVarRange.configure(disabledforeground="#a3a3a3")
         self.L_transVarRange.configure(foreground="#000000")
         self.L_transVarRange.configure(highlightbackground="#d9d9d9")
@@ -210,13 +229,14 @@ class Toplevel1:
         self.L_transVarRange.configure(text="[0-100]")
 
         self.L_transVarPercent = tk.Label(self.LF_transProbs)
-        self.L_transVarPercent.place(relx=0.863, rely=0.724, height=23, width=14
-                , bordermode='ignore')
+        self.L_transVarPercent.place(
+            relx=0.863, rely=0.724, height=23, width=14, bordermode="ignore"
+        )
         self.L_transVarPercent.configure(activebackground="#d9d9d9")
         self.L_transVarPercent.configure(activeforeground="black")
-        self.L_transVarPercent.configure(anchor='w')
+        self.L_transVarPercent.configure(anchor="w")
         self.L_transVarPercent.configure(background="#d9d9d9")
-        self.L_transVarPercent.configure(compound='left')
+        self.L_transVarPercent.configure(compound="left")
         self.L_transVarPercent.configure(disabledforeground="#a3a3a3")
         self.L_transVarPercent.configure(foreground="#000000")
         self.L_transVarPercent.configure(highlightbackground="#d9d9d9")
@@ -224,13 +244,14 @@ class Toplevel1:
         self.L_transVarPercent.configure(text="%")
 
         self.L_transFuncRange = tk.Label(self.LF_transProbs)
-        self.L_transFuncRange.place(relx=0.065, rely=0.321, height=23, width=54
-                , bordermode='ignore')
+        self.L_transFuncRange.place(
+            relx=0.065, rely=0.321, height=23, width=54, bordermode="ignore"
+        )
         self.L_transFuncRange.configure(activebackground="#d9d9d9")
         self.L_transFuncRange.configure(activeforeground="black")
-        self.L_transFuncRange.configure(anchor='e')
+        self.L_transFuncRange.configure(anchor="e")
         self.L_transFuncRange.configure(background="#d9d9d9")
-        self.L_transFuncRange.configure(compound='left')
+        self.L_transFuncRange.configure(compound="left")
         self.L_transFuncRange.configure(disabledforeground="#a3a3a3")
         self.L_transFuncRange.configure(foreground="#000000")
         self.L_transFuncRange.configure(highlightbackground="#d9d9d9")
@@ -238,8 +259,9 @@ class Toplevel1:
         self.L_transFuncRange.configure(text="[0-100]")
 
         self.E_transFuncProb = tk.Entry(self.LF_transProbs)
-        self.E_transFuncProb.place(relx=0.458, rely=0.336, height=20
-                , relwidth=0.418, bordermode='ignore')
+        self.E_transFuncProb.place(
+            relx=0.458, rely=0.336, height=20, relwidth=0.418, bordermode="ignore"
+        )
         self.E_transFuncProb.configure(background="white")
         self.E_transFuncProb.configure(disabledforeground="#a3a3a3")
         self.E_transFuncProb.configure(font="-family {Segoe UI} -size 9")
@@ -251,13 +273,14 @@ class Toplevel1:
         self.E_transFuncProb.configure(selectforeground="black")
 
         self.L_transFuncPercent = tk.Label(self.LF_transProbs)
-        self.L_transFuncPercent.place(relx=0.863, rely=0.336, height=24, width=14
-                , bordermode='ignore')
+        self.L_transFuncPercent.place(
+            relx=0.863, rely=0.336, height=24, width=14, bordermode="ignore"
+        )
         self.L_transFuncPercent.configure(activebackground="#d9d9d9")
         self.L_transFuncPercent.configure(activeforeground="black")
-        self.L_transFuncPercent.configure(anchor='w')
+        self.L_transFuncPercent.configure(anchor="w")
         self.L_transFuncPercent.configure(background="#d9d9d9")
-        self.L_transFuncPercent.configure(compound='left')
+        self.L_transFuncPercent.configure(compound="left")
         self.L_transFuncPercent.configure(disabledforeground="#a3a3a3")
         self.L_transFuncPercent.configure(foreground="#000000")
         self.L_transFuncPercent.configure(highlightbackground="#d9d9d9")
@@ -265,8 +288,9 @@ class Toplevel1:
         self.L_transFuncPercent.configure(text="%")
 
         self.E_transVarProb = tk.Entry(self.LF_transProbs)
-        self.E_transVarProb.place(relx=0.458, rely=0.718, height=20
-                , relwidth=0.416, bordermode='ignore')
+        self.E_transVarProb.place(
+            relx=0.458, rely=0.718, height=20, relwidth=0.416, bordermode="ignore"
+        )
         self.E_transVarProb.configure(background="white")
         self.E_transVarProb.configure(disabledforeground="#a3a3a3")
         self.E_transVarProb.configure(font="-family {Segoe UI} -size 9")
@@ -278,13 +302,14 @@ class Toplevel1:
         self.E_transVarProb.configure(selectforeground="black")
 
         self.L_transError = tk.Label(self.LF_translation)
-        self.L_transError.place(relx=0.029, rely=0.807, height=52, width=316
-                , bordermode='ignore')
+        self.L_transError.place(
+            relx=0.029, rely=0.807, height=52, width=316, bordermode="ignore"
+        )
         self.L_transError.configure(activebackground="#d9d9d9")
         self.L_transError.configure(activeforeground="black")
-        self.L_transError.configure(anchor='nw', justify="left")
+        self.L_transError.configure(anchor="nw", justify="left")
         self.L_transError.configure(background="#d9d9d9")
-        self.L_transError.configure(compound='left')
+        self.L_transError.configure(compound="left")
         self.L_transError.configure(cursor="arrow")
         self.L_transError.configure(disabledforeground="#a3a3a3")
         self.L_transError.configure(font="-family {Segoe UI} -size 9 -weight bold")
@@ -295,9 +320,10 @@ class Toplevel1:
         self.L_transError.configure(wraplength="316")
 
         self.LF_transInLang = tk.LabelFrame(self.LF_translation)
-        self.LF_transInLang.place(relx=0.029, rely=0.09, relheight=0.214
-                , relwidth=0.45, bordermode='ignore')
-        self.LF_transInLang.configure(relief='groove')
+        self.LF_transInLang.place(
+            relx=0.029, rely=0.09, relheight=0.214, relwidth=0.45, bordermode="ignore"
+        )
+        self.LF_transInLang.configure(relief="groove")
         self.LF_transInLang.configure(font="-family {Segoe UI} -size 9")
         self.LF_transInLang.configure(foreground="#000000")
         self.LF_transInLang.configure(text="Source Language")
@@ -307,19 +333,21 @@ class Toplevel1:
 
         _style_code()
         self.CB_inLang = ttk.Combobox(self.LF_transInLang)
-        self.CB_inLang.place(relx=0.065, rely=0.387, relheight=0.400
-                , relwidth=0.869, bordermode='ignore')
+        self.CB_inLang.place(
+            relx=0.065, rely=0.387, relheight=0.400, relwidth=0.869, bordermode="ignore"
+        )
         self.value_list = []
         self.CB_inLang.configure(values=self.value_list)
         self.CB_inLang.configure(font="-family {Segoe UI} -size 9")
-        self.CB_inLang.configure(justify='right')
+        self.CB_inLang.configure(justify="right")
         self.CB_inLang.configure(textvariable=self.selected_inLang)
         self.CB_inLang.configure(state="readonly")
 
         self.LF_logicObfsc = tk.LabelFrame(self.F_params)
-        self.LF_logicObfsc.place(relx=0.017, rely=0.607, relheight=0.208
-                , relwidth=0.362, bordermode='ignore')
-        self.LF_logicObfsc.configure(relief='groove')
+        self.LF_logicObfsc.place(
+            relx=0.017, rely=0.607, relheight=0.208, relwidth=0.362, bordermode="ignore"
+        )
+        self.LF_logicObfsc.configure(relief="groove")
         self.LF_logicObfsc.configure(font="-family {Segoe UI} -size 10")
         self.LF_logicObfsc.configure(foreground="#000000")
         self.LF_logicObfsc.configure(text="Logic Obfuscation")
@@ -329,13 +357,14 @@ class Toplevel1:
         self.LF_logicObfsc.configure(highlightcolor="#000000")
 
         self.L_logicObfscProbRange = tk.Label(self.LF_logicObfsc)
-        self.L_logicObfscProbRange.place(relx=0.067, rely=0.519, height=22
-                , width=92, bordermode='ignore')
+        self.L_logicObfscProbRange.place(
+            relx=0.067, rely=0.519, height=22, width=92, bordermode="ignore"
+        )
         self.L_logicObfscProbRange.configure(activebackground="#d9d9d9")
         self.L_logicObfscProbRange.configure(activeforeground="black")
-        self.L_logicObfscProbRange.configure(anchor='e')
+        self.L_logicObfscProbRange.configure(anchor="e")
         self.L_logicObfscProbRange.configure(background="#d9d9d9")
-        self.L_logicObfscProbRange.configure(compound='left')
+        self.L_logicObfscProbRange.configure(compound="left")
         self.L_logicObfscProbRange.configure(disabledforeground="#a3a3a3")
         self.L_logicObfscProbRange.configure(foreground="#000000")
         self.L_logicObfscProbRange.configure(highlightbackground="#d9d9d9")
@@ -343,8 +372,9 @@ class Toplevel1:
         self.L_logicObfscProbRange.configure(text="[0-100]")
 
         self.E_logicObfscProb = tk.Entry(self.LF_logicObfsc)
-        self.E_logicObfscProb.place(relx=0.529, rely=0.519, height=20
-                , relwidth=0.352, bordermode='ignore')
+        self.E_logicObfscProb.place(
+            relx=0.529, rely=0.519, height=20, relwidth=0.352, bordermode="ignore"
+        )
         self.E_logicObfscProb.configure(background="white")
         self.E_logicObfscProb.configure(disabledforeground="#a3a3a3")
         self.E_logicObfscProb.configure(font="-family {Segoe UI} -size 9")
@@ -356,13 +386,14 @@ class Toplevel1:
         self.E_logicObfscProb.configure(selectforeground="black")
 
         self.L_logicObfscPercent = tk.Label(self.LF_logicObfsc)
-        self.L_logicObfscPercent.place(relx=0.876, rely=0.519, height=21
-                , width=20, bordermode='ignore')
+        self.L_logicObfscPercent.place(
+            relx=0.876, rely=0.519, height=21, width=20, bordermode="ignore"
+        )
         self.L_logicObfscPercent.configure(activebackground="#d9d9d9")
         self.L_logicObfscPercent.configure(activeforeground="black")
-        self.L_logicObfscPercent.configure(anchor='w')
+        self.L_logicObfscPercent.configure(anchor="w")
         self.L_logicObfscPercent.configure(background="#d9d9d9")
-        self.L_logicObfscPercent.configure(compound='left')
+        self.L_logicObfscPercent.configure(compound="left")
         self.L_logicObfscPercent.configure(disabledforeground="#a3a3a3")
         self.L_logicObfscPercent.configure(foreground="#000000")
         self.L_logicObfscPercent.configure(highlightbackground="#d9d9d9")
@@ -370,13 +401,14 @@ class Toplevel1:
         self.L_logicObfscPercent.configure(text="%")
 
         self.L_logicObfscProb = tk.Label(self.LF_logicObfsc)
-        self.L_logicObfscProb.place(relx=0.067, rely=0.296, height=13, width=113
-                , bordermode='ignore')
+        self.L_logicObfscProb.place(
+            relx=0.067, rely=0.296, height=13, width=113, bordermode="ignore"
+        )
         self.L_logicObfscProb.configure(activebackground="#d9d9d9")
         self.L_logicObfscProb.configure(activeforeground="black")
-        self.L_logicObfscProb.configure(anchor='w')
+        self.L_logicObfscProb.configure(anchor="w")
         self.L_logicObfscProb.configure(background="#d9d9d9")
-        self.L_logicObfscProb.configure(compound='left')
+        self.L_logicObfscProb.configure(compound="left")
         self.L_logicObfscProb.configure(disabledforeground="#a3a3a3")
         self.L_logicObfscProb.configure(font="-family {Segoe UI} -size 9 -underline 1")
         self.L_logicObfscProb.configure(foreground="#000000")
@@ -385,9 +417,10 @@ class Toplevel1:
         self.L_logicObfscProb.configure(text="Probability:")
 
         self.LF_outputFiles = tk.LabelFrame(self.F_params)
-        self.LF_outputFiles.place(relx=0.017, rely=0.29, relheight=0.306
-                , relwidth=0.362, bordermode='ignore')
-        self.LF_outputFiles.configure(relief='groove')
+        self.LF_outputFiles.place(
+            relx=0.017, rely=0.29, relheight=0.306, relwidth=0.362, bordermode="ignore"
+        )
+        self.LF_outputFiles.configure(relief="groove")
         self.LF_outputFiles.configure(font="-family {Segoe UI} -size 10")
         self.LF_outputFiles.configure(foreground="#000000")
         self.LF_outputFiles.configure(text="Output Directory")
@@ -396,13 +429,14 @@ class Toplevel1:
         self.LF_outputFiles.configure(highlightcolor="#000000")
 
         self.L_outputCount = tk.Label(self.LF_outputFiles)
-        self.L_outputCount.place(relx=0.048, rely=0.706, height=18, width=124
-                , bordermode='ignore')
+        self.L_outputCount.place(
+            relx=0.048, rely=0.706, height=18, width=124, bordermode="ignore"
+        )
         self.L_outputCount.configure(activebackground="#d9d9d9")
         self.L_outputCount.configure(activeforeground="black")
-        self.L_outputCount.configure(anchor='w')
+        self.L_outputCount.configure(anchor="w")
         self.L_outputCount.configure(background="#d9d9d9")
-        self.L_outputCount.configure(compound='left')
+        self.L_outputCount.configure(compound="left")
         self.L_outputCount.configure(cursor="arrow")
         self.L_outputCount.configure(disabledforeground="#a3a3a3")
         self.L_outputCount.configure(font="-family {Segoe UI} -size 9")
@@ -412,8 +446,9 @@ class Toplevel1:
         self.L_outputCount.configure(text="# Clones to Generate:")
 
         self.E_numClones = tk.Entry(self.LF_outputFiles)
-        self.E_numClones.place(relx=0.619, rely=0.706, height=20, relwidth=0.305
-                , bordermode='ignore')
+        self.E_numClones.place(
+            relx=0.619, rely=0.706, height=20, relwidth=0.305, bordermode="ignore"
+        )
         self.E_numClones.configure(background="white")
         self.E_numClones.configure(disabledforeground="#a3a3a3")
         self.E_numClones.configure(font="-family {Segoe UI} -size 9")
@@ -425,37 +460,44 @@ class Toplevel1:
         self.E_numClones.configure(selectforeground="black")
 
         self.E_outputDirectory = tk.Entry(self.LF_outputFiles)
-        self.E_outputDirectory.place(relx=0.043, rely=0.202, height=20
-                , relwidth=0.876, bordermode='ignore')
+        self.E_outputDirectory.place(
+            relx=0.043, rely=0.202, height=20, relwidth=0.876, bordermode="ignore"
+        )
         self.E_outputDirectory.configure(background="white")
         self.E_outputDirectory.configure(disabledforeground="#a3a3a3")
-        self.E_outputDirectory.configure(font="-family {Segoe UI} -size 9 -slant italic")
+        self.E_outputDirectory.configure(
+            font="-family {Segoe UI} -size 9 -slant italic"
+        )
         self.E_outputDirectory.configure(foreground="#000000")
         self.E_outputDirectory.configure(highlightbackground="#d9d9d9")
         self.E_outputDirectory.configure(highlightcolor="#000000")
         self.E_outputDirectory.configure(insertbackground="#000000")
         self.E_outputDirectory.configure(selectbackground="#d9d9d9")
         self.E_outputDirectory.configure(selectforeground="black")
-        self.E_outputDirectory.configure(state='readonly')
+        self.E_outputDirectory.configure(state="readonly")
 
         self.L_outputError = tk.Label(self.LF_outputFiles)
-        self.L_outputError.place(relx=0.043, rely=0.437, height=25, width=135
-                , bordermode='ignore')
+        self.L_outputError.place(
+            relx=0.043, rely=0.437, height=25, width=135, bordermode="ignore"
+        )
         self.L_outputError.configure(activebackground="#d9d9d9")
         self.L_outputError.configure(activeforeground="black")
-        self.L_outputError.configure(anchor='e')
+        self.L_outputError.configure(anchor="e")
         self.L_outputError.configure(background="#d9d9d9")
-        self.L_outputError.configure(compound='left')
+        self.L_outputError.configure(compound="left")
         self.L_outputError.configure(disabledforeground="#a3a3a3")
-        self.L_outputError.configure(font="-family {Segoe UI} -size 9 -weight bold -underline 1")
+        self.L_outputError.configure(
+            font="-family {Segoe UI} -size 9 -weight bold -underline 1"
+        )
         self.L_outputError.configure(foreground="#d70005")
         self.L_outputError.configure(highlightbackground="#d9d9d9")
         self.L_outputError.configure(highlightcolor="#000000")
         self.L_outputError.configure(text="")
 
         self.B_outputDirSelect = tk.Button(self.LF_outputFiles)
-        self.B_outputDirSelect.place(relx=0.714, rely=0.437, height=24, width=44
-                , bordermode='ignore')
+        self.B_outputDirSelect.place(
+            relx=0.714, rely=0.437, height=24, width=44, bordermode="ignore"
+        )
         self.B_outputDirSelect.configure(activebackground="#d9d9d9")
         self.B_outputDirSelect.configure(activeforeground="black")
         self.B_outputDirSelect.configure(background="#d9d9d9")
@@ -465,13 +507,15 @@ class Toplevel1:
         self.B_outputDirSelect.configure(highlightcolor="#000000")
         self.B_outputDirSelect.configure(text="Open")
         self.B_outputDirSelect.configure(underline="0")
-        self.B_outputDirSelect.configure(command=
-                                    Python_Obfuscator_support.select_outDir)
+        self.B_outputDirSelect.configure(
+            command=Python_Obfuscator_support.select_outDir
+        )
 
         self.LF_inputFile = tk.LabelFrame(self.F_params)
-        self.LF_inputFile.place(relx=0.017, rely=0.072, relheight=0.211
-                , relwidth=0.362, bordermode='ignore')
-        self.LF_inputFile.configure(relief='groove')
+        self.LF_inputFile.place(
+            relx=0.017, rely=0.072, relheight=0.211, relwidth=0.362, bordermode="ignore"
+        )
+        self.LF_inputFile.configure(relief="groove")
         self.LF_inputFile.configure(font="-family {Segoe UI} -size 10")
         self.LF_inputFile.configure(foreground="#000000")
         self.LF_inputFile.configure(text="Input File")
@@ -480,23 +524,27 @@ class Toplevel1:
         self.LF_inputFile.configure(highlightcolor="#000000")
 
         self.L_inputError = tk.Label(self.LF_inputFile)
-        self.L_inputError.place(relx=0.048, rely=0.61, height=20, width=134
-                , bordermode='ignore')
+        self.L_inputError.place(
+            relx=0.048, rely=0.61, height=20, width=134, bordermode="ignore"
+        )
         self.L_inputError.configure(activebackground="#d9d9d9")
         self.L_inputError.configure(activeforeground="black")
-        self.L_inputError.configure(anchor='e')
+        self.L_inputError.configure(anchor="e")
         self.L_inputError.configure(background="#d9d9d9")
-        self.L_inputError.configure(compound='left')
+        self.L_inputError.configure(compound="left")
         self.L_inputError.configure(disabledforeground="#a3a3a3")
-        self.L_inputError.configure(font="-family {Segoe UI} -size 9 -weight bold -underline 1")
+        self.L_inputError.configure(
+            font="-family {Segoe UI} -size 9 -weight bold -underline 1"
+        )
         self.L_inputError.configure(foreground="#d70005")
         self.L_inputError.configure(highlightbackground="#d9d9d9")
         self.L_inputError.configure(highlightcolor="#000000")
         self.L_inputError.configure(text="")
 
         self.E_inputFilePath = tk.Entry(self.LF_inputFile)
-        self.E_inputFilePath.place(relx=0.048, rely=0.268, height=20
-                , relwidth=0.876, bordermode='ignore')
+        self.E_inputFilePath.place(
+            relx=0.048, rely=0.268, height=20, relwidth=0.876, bordermode="ignore"
+        )
         self.E_inputFilePath.configure(background="white")
         self.E_inputFilePath.configure(disabledforeground="#a3a3a3")
         self.E_inputFilePath.configure(font="-family {Segoe UI} -size 9 -slant italic")
@@ -506,11 +554,12 @@ class Toplevel1:
         self.E_inputFilePath.configure(insertbackground="#000000")
         self.E_inputFilePath.configure(selectbackground="#d9d9d9")
         self.E_inputFilePath.configure(selectforeground="black")
-        self.E_inputFilePath.configure(state='readonly')
+        self.E_inputFilePath.configure(state="readonly")
 
         self.B_inputFileSelect = tk.Button(self.LF_inputFile)
-        self.B_inputFileSelect.place(relx=0.714, rely=0.585, height=24, width=44
-                , bordermode='ignore')
+        self.B_inputFileSelect.place(
+            relx=0.714, rely=0.585, height=24, width=44, bordermode="ignore"
+        )
         self.B_inputFileSelect.configure(activebackground="#d9d9d9")
         self.B_inputFileSelect.configure(activeforeground="black")
         self.B_inputFileSelect.configure(background="#d9d9d9")
@@ -521,13 +570,11 @@ class Toplevel1:
         self.B_inputFileSelect.configure(highlightcolor="#000000")
         self.B_inputFileSelect.configure(text="Open")
         self.B_inputFileSelect.configure(underline="0")
-        self.B_inputFileSelect.configure(command=
-                                    Python_Obfuscator_support.upload_file)
+        self.B_inputFileSelect.configure(command=Python_Obfuscator_support.upload_file)
 
         self.F_generate = tk.Frame(self.top)
-        self.F_generate.place(relx=0.017, rely=0.025, relheight=0.948
-                , relwidth=0.968)
-        self.F_generate.configure(relief='groove')
+        self.F_generate.place(relx=0.017, rely=0.025, relheight=0.948, relwidth=0.968)
+        self.F_generate.configure(relief="groove")
         self.F_generate.configure(borderwidth="2")
         self.F_generate.configure(relief="groove")
         self.F_generate.configure(background="#d9d9d9")
@@ -535,13 +582,12 @@ class Toplevel1:
         self.F_generate.configure(highlightcolor="#000000")
 
         self.L_generateLogCurr = tk.Label(self.F_generate)
-        self.L_generateLogCurr.place(relx=0.035, rely=0.265, height=21
-                , width=154)
+        self.L_generateLogCurr.place(relx=0.035, rely=0.265, height=21, width=154)
         self.L_generateLogCurr.configure(activebackground="#d9d9d9")
         self.L_generateLogCurr.configure(activeforeground="black")
-        self.L_generateLogCurr.configure(anchor='w')
+        self.L_generateLogCurr.configure(anchor="w")
         self.L_generateLogCurr.configure(background="#d9d9d9")
-        self.L_generateLogCurr.configure(compound='left')
+        self.L_generateLogCurr.configure(compound="left")
         self.L_generateLogCurr.configure(disabledforeground="#a3a3a3")
         self.L_generateLogCurr.configure(font="-family {Segoe UI} -size 12")
         self.L_generateLogCurr.configure(foreground="#000000")
@@ -554,9 +600,9 @@ class Toplevel1:
 
         self.L_generateLogAll.configure(activebackground="#d9d9d9")
         self.L_generateLogAll.configure(activeforeground="black")
-        self.L_generateLogAll.configure(anchor='w')
+        self.L_generateLogAll.configure(anchor="w")
         self.L_generateLogAll.configure(background="#d9d9d9")
-        self.L_generateLogAll.configure(compound='left')
+        self.L_generateLogAll.configure(compound="left")
         self.L_generateLogAll.configure(disabledforeground="#a3a3a3")
         self.L_generateLogAll.configure(font="-family {Segoe UI} -size 12")
         self.L_generateLogAll.configure(foreground="#000000")
@@ -565,17 +611,16 @@ class Toplevel1:
         self.L_generateLogAll.configure(text="Overall Generation Status:")
 
         self.C_logCurr = Python_Obfuscator_support.Custom2(self.F_generate)
-        self.C_logCurr.place(relx=0.035, rely=0.344, relheight=0.553
-                , relwidth=0.457)
+        self.C_logCurr.place(relx=0.035, rely=0.344, relheight=0.553, relwidth=0.457)
 
         self.L_generateStatus = tk.Label(self.F_generate)
         self.L_generateStatus.place(relx=0.346, rely=0.899, height=31, width=364)
 
         self.L_generateStatus.configure(activebackground="#d9d9d9")
         self.L_generateStatus.configure(activeforeground="black")
-        self.L_generateStatus.configure(anchor='se')
+        self.L_generateStatus.configure(anchor="se")
         self.L_generateStatus.configure(background="#d9d9d9")
-        self.L_generateStatus.configure(compound='left')
+        self.L_generateStatus.configure(compound="left")
         self.L_generateStatus.configure(disabledforeground="#a3a3a3")
         self.L_generateStatus.configure(font="-family {Segoe UI} -size 12 -weight bold")
         self.L_generateStatus.configure(foreground="#000000")
@@ -584,9 +629,8 @@ class Toplevel1:
         self.L_generateStatus.configure(text="Generating...")
 
         self.LF_currClone = tk.LabelFrame(self.F_generate)
-        self.LF_currClone.place(relx=0.045, rely=0.026, relheight=0.198
-                , relwidth=0.919)
-        self.LF_currClone.configure(relief='groove')
+        self.LF_currClone.place(relx=0.045, rely=0.026, relheight=0.198, relwidth=0.919)
+        self.LF_currClone.configure(relief="groove")
         self.LF_currClone.configure(font="-family {Segoe UI} -size 12")
         self.LF_currClone.configure(foreground="#000000")
         self.LF_currClone.configure(text="Clone #")
@@ -595,9 +639,10 @@ class Toplevel1:
         self.LF_currClone.configure(highlightcolor="#000000")
 
         self.LF_logicObfsc = tk.LabelFrame(self.LF_currClone)
-        self.LF_logicObfsc.place(relx=0.772, rely=0.267, relheight=0.6
-                , relwidth=0.207, bordermode='ignore')
-        self.LF_logicObfsc.configure(relief='groove')
+        self.LF_logicObfsc.place(
+            relx=0.772, rely=0.267, relheight=0.6, relwidth=0.207, bordermode="ignore"
+        )
+        self.LF_logicObfsc.configure(relief="groove")
         self.LF_logicObfsc.configure(foreground="#000000")
         self.LF_logicObfsc.configure(labelanchor="n")
         self.LF_logicObfsc.configure(text="Logic Obfuscated")
@@ -606,13 +651,14 @@ class Toplevel1:
         self.LF_logicObfsc.configure(highlightcolor="#000000")
 
         self.L_currLogicRatio = tk.Label(self.LF_logicObfsc)
-        self.L_currLogicRatio.place(relx=0.073, rely=0.4, height=21, width=94
-                , bordermode='ignore')
+        self.L_currLogicRatio.place(
+            relx=0.073, rely=0.4, height=21, width=94, bordermode="ignore"
+        )
         self.L_currLogicRatio.configure(activebackground="#d9d9d9")
         self.L_currLogicRatio.configure(activeforeground="black")
-        self.L_currLogicRatio.configure(anchor='n')
+        self.L_currLogicRatio.configure(anchor="n")
         self.L_currLogicRatio.configure(background="#d9d9d9")
-        self.L_currLogicRatio.configure(compound='left')
+        self.L_currLogicRatio.configure(compound="left")
         self.L_currLogicRatio.configure(disabledforeground="#a3a3a3")
         self.L_currLogicRatio.configure(foreground="#000000")
         self.L_currLogicRatio.configure(highlightbackground="#d9d9d9")
@@ -620,9 +666,10 @@ class Toplevel1:
         self.L_currLogicRatio.configure(text="#/#")
 
         self.LF_varsRenamed = tk.LabelFrame(self.LF_currClone)
-        self.LF_varsRenamed.place(relx=0.32, rely=0.267, relheight=0.6
-                , relwidth=0.207, bordermode='ignore')
-        self.LF_varsRenamed.configure(relief='groove')
+        self.LF_varsRenamed.place(
+            relx=0.32, rely=0.267, relheight=0.6, relwidth=0.207, bordermode="ignore"
+        )
+        self.LF_varsRenamed.configure(relief="groove")
         self.LF_varsRenamed.configure(foreground="#000000")
         self.LF_varsRenamed.configure(labelanchor="n")
         self.LF_varsRenamed.configure(text="Vars Renamed")
@@ -631,13 +678,14 @@ class Toplevel1:
         self.LF_varsRenamed.configure(highlightcolor="#000000")
 
         self.L_currVarRatio = tk.Label(self.LF_varsRenamed)
-        self.L_currVarRatio.place(relx=0.073, rely=0.4, height=21, width=94
-                , bordermode='ignore')
+        self.L_currVarRatio.place(
+            relx=0.073, rely=0.4, height=21, width=94, bordermode="ignore"
+        )
         self.L_currVarRatio.configure(activebackground="#d9d9d9")
         self.L_currVarRatio.configure(activeforeground="black")
-        self.L_currVarRatio.configure(anchor='n')
+        self.L_currVarRatio.configure(anchor="n")
         self.L_currVarRatio.configure(background="#d9d9d9")
-        self.L_currVarRatio.configure(compound='left')
+        self.L_currVarRatio.configure(compound="left")
         self.L_currVarRatio.configure(disabledforeground="#a3a3a3")
         self.L_currVarRatio.configure(foreground="#000000")
         self.L_currVarRatio.configure(highlightbackground="#d9d9d9")
@@ -645,9 +693,10 @@ class Toplevel1:
         self.L_currVarRatio.configure(text="#/#")
 
         self.LF_funcRenamed = tk.LabelFrame(self.LF_currClone)
-        self.LF_funcRenamed.place(relx=0.546, rely=0.267, relheight=0.6
-                , relwidth=0.207, bordermode='ignore')
-        self.LF_funcRenamed.configure(relief='groove')
+        self.LF_funcRenamed.place(
+            relx=0.546, rely=0.267, relheight=0.6, relwidth=0.207, bordermode="ignore"
+        )
+        self.LF_funcRenamed.configure(relief="groove")
         self.LF_funcRenamed.configure(foreground="#000000")
         self.LF_funcRenamed.configure(labelanchor="n")
         self.LF_funcRenamed.configure(text="Funcs Renamed")
@@ -656,13 +705,14 @@ class Toplevel1:
         self.LF_funcRenamed.configure(highlightcolor="#000000")
 
         self.L_currFuncRatio = tk.Label(self.LF_funcRenamed)
-        self.L_currFuncRatio.place(relx=0.073, rely=0.4, height=21, width=94
-                , bordermode='ignore')
+        self.L_currFuncRatio.place(
+            relx=0.073, rely=0.4, height=21, width=94, bordermode="ignore"
+        )
         self.L_currFuncRatio.configure(activebackground="#d9d9d9")
         self.L_currFuncRatio.configure(activeforeground="black")
-        self.L_currFuncRatio.configure(anchor='n')
+        self.L_currFuncRatio.configure(anchor="n")
         self.L_currFuncRatio.configure(background="#d9d9d9")
-        self.L_currFuncRatio.configure(compound='left')
+        self.L_currFuncRatio.configure(compound="left")
         self.L_currFuncRatio.configure(disabledforeground="#a3a3a3")
         self.L_currFuncRatio.configure(foreground="#000000")
         self.L_currFuncRatio.configure(highlightbackground="#d9d9d9")
@@ -670,9 +720,10 @@ class Toplevel1:
         self.L_currFuncRatio.configure(text="#/#")
 
         self.LF_transLang = tk.LabelFrame(self.LF_currClone)
-        self.LF_transLang.place(relx=0.019, rely=0.267, relheight=0.6
-                , relwidth=0.281, bordermode='ignore')
-        self.LF_transLang.configure(relief='groove')
+        self.LF_transLang.place(
+            relx=0.019, rely=0.267, relheight=0.6, relwidth=0.281, bordermode="ignore"
+        )
+        self.LF_transLang.configure(relief="groove")
         self.LF_transLang.configure(foreground="#000000")
         self.LF_transLang.configure(labelanchor="n")
         self.LF_transLang.configure(text="Output Language")
@@ -681,13 +732,14 @@ class Toplevel1:
         self.LF_transLang.configure(highlightcolor="#000000")
 
         self.L_currLang = tk.Label(self.LF_transLang)
-        self.L_currLang.place(relx=0.081, rely=0.4, height=21, width=124
-                , bordermode='ignore')
+        self.L_currLang.place(
+            relx=0.081, rely=0.4, height=21, width=124, bordermode="ignore"
+        )
         self.L_currLang.configure(activebackground="#d9d9d9")
         self.L_currLang.configure(activeforeground="black")
-        self.L_currLang.configure(anchor='n')
+        self.L_currLang.configure(anchor="n")
         self.L_currLang.configure(background="#d9d9d9")
-        self.L_currLang.configure(compound='left')
+        self.L_currLang.configure(compound="left")
         self.L_currLang.configure(disabledforeground="#a3a3a3")
         self.L_currLang.configure(foreground="#000000")
         self.L_currLang.configure(highlightbackground="#d9d9d9")
@@ -695,18 +747,14 @@ class Toplevel1:
         self.L_currLang.configure(text="Curr Lang")
 
         self.C_logAll = Python_Obfuscator_support.Custom2(self.F_generate)
-        self.C_logAll.place(relx=0.519, rely=0.344, relheight=0.553
-                , relwidth=0.457)
-        
+        self.C_logAll.place(relx=0.519, rely=0.344, relheight=0.553, relwidth=0.457)
+
         self.F_params.tkraise()
-        
-    
+
+
 def start_up():
     Python_Obfuscator_support.main()
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     Python_Obfuscator_support.main()
-
-
-
-
