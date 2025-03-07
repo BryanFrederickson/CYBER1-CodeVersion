@@ -20,8 +20,11 @@ from libcst.metadata import (
 import random  # used for randomly choosing placeholder names
 import re  # for regular expressions
 import string
+from typing_extensions import final
 
-import argostranslate.package
+from coding_abbreviations import abbreviations
+
+import argostranslate.translate
 
 # time consuming to boot when enabled
 # import argostranslate.translate
@@ -60,8 +63,24 @@ def init_params():
     params["vars_percent_valid"] = False
 
     params["lang_names_installed"] = dict()
+    params["lang_packages"] = dict()
     params["selected_inputlang"] = ""
     params["selected_outputlangs"] = list()
+
+    global stats
+    stats = dict()
+    stats["renamed_vars"] = dict()
+    stats["func_name_pairs"] = dict()
+    stats["current_outlang"] = "Empty"
+
+    stats["total_vars"] = 0
+    stats["changed_vars"] = 0
+
+    stats["total_funcs"] = 0
+    stats["changed_funcs"] = 0
+
+    stats["total_logic"] = 0
+    stats["changed_logic"] = 0
 
 
 def main(*args):
@@ -84,6 +103,113 @@ Custom = ScrolledCheckedListBox
 Custom2 = st.ScrolledText
 
 
+def print_to_logCurr(input: str):
+    _w1.C_logCurr.configure(state="normal")
+    _w1.C_logCurr.insert(
+        tk.END,
+        input + "\n",
+    )
+    _w1.C_logCurr.see(tk.END)
+    _w1.C_logCurr.configure(state="disabled")
+    root.update()
+    root.after(1)
+
+
+def clear_logCurr():
+    _w1.C_logCurr.configure(state="normal")
+    _w1.C_logCurr.delete("1.0", tk.END)
+    _w1.C_logCurr.configure(state="disabled")
+    root.update()
+    root.after(1)
+
+
+def print_to_logAll(input: str):
+    _w1.C_logAll.configure(state="normal")
+    _w1.C_logAll.insert(
+        tk.END,
+        input + "\n",
+    )
+    _w1.C_logAll.see(tk.END)
+    _w1.C_logAll.configure(state="disabled")
+    root.update()
+    root.after(1)
+
+
+def update_VarRatio(curr: int, total: int):
+    _w1.L_currVarRatio.configure(text=f"{curr}/{total}")
+    root.update()
+    root.after(1)
+
+
+def update_FuncRatio(curr: int, total: int):
+    _w1.L_currFuncRatio.configure(text=f"{curr}/{total}")
+    root.update()
+    root.after(1)
+
+
+def update_LogicRatio(curr: int, total: int):
+    _w1.L_currLogicRatio.configure(text=f"{curr}/{total}")
+    root.update()
+    root.after(1)
+
+
+def generate_clones():
+    _w1.F_generate.tkraise()
+
+    for clone_num in range(params["clones_count"]):
+        clear_logCurr()
+        print_to_logAll(f"Generating clone #{clone_num+1}...")
+        stats["renamed_vars"] = dict()
+        stats["func_name_pairs"] = dict()
+        stats["current_outlang"] = random.choice(params["selected_outputlangs"])
+        _w1.L_currLang.configure(text=stats["current_outlang"])
+
+        stats["total_vars"] = 0
+        stats["changed_vars"] = 0
+        update_VarRatio(0, 0)
+
+        stats["total_funcs"] = 0
+        stats["changed_funcs"] = 0
+        update_FuncRatio(0, 0)
+
+        stats["total_logic"] = 0
+        stats["changed_logic"] = 0
+        update_LogicRatio(0, 0)
+
+        ## Provides extra data for every node in the tree ##
+        global wrapped_module
+        wrapped_module = MetadataWrapper(params["original_cst"])
+
+        if params["logic_percent"] != 0:
+            ## Traverse tree with transformer subclass ##
+            wrapped_module = wrapped_module.visit(LogicRenamer())
+            print("Logic obfuscated...")
+            print_to_logCurr("Logic obfuscated...")
+
+        if params["vars_percent"] != 0:
+            wrapped_module = wrapped_module.visit(VarRename())
+            print("Variables renamed...")
+            print_to_logCurr("Variables renamed...")
+
+        if params["func_percent"] != 0:
+            wrapped_module = wrapped_module.visit(FuncRename())
+            print("Functions renamed...")
+            print_to_logCurr("Functions renamed...")
+
+            wrapped_module = wrapped_module.visit(CallRename())
+            print("Function calls renamed...")
+            print_to_logCurr("Function calls renamed...")
+
+        modified_code = wrapped_module.code
+        current_filename = str(f"{params['input_filename']}_Obf_{clone_num+1}.py")
+        filepath = os.path.join(params["output_dir"], current_filename)
+        with open(filepath, "w") as output_file:
+            output_file.write(modified_code)
+        output_file.close()
+        print_to_logAll(f"'{current_filename}' generated.\n")
+    _w1.L_generateStatus.configure(text="Generation Complete.")
+
+
 def disable_genButton():
     _w1.B_generate.configure(background="#809296")
     _w1.B_generate.configure(disabledforeground="#4c5659")
@@ -92,8 +218,8 @@ def disable_genButton():
 
 
 def init_langs():
-    installed_packages = argostranslate.package.get_installed_packages()
-    if not installed_packages:
+    installed_languages = argostranslate.translate.get_installed_languages()
+    if not installed_languages:
         _w1.L_transError.configure(
             text='No languages installed. Translation disabled. See "Argos Translate Language Installer" on repo for install guide.'
         )
@@ -106,19 +232,13 @@ def init_langs():
         params["vars_percent_valid"] = True
         _w1.CB_inLang.configure(state="disabled")
     else:
-        langs = set()
-        lang_packages = dict()
-        for package in installed_packages:
-            langs.add(package.from_code)
-            lang_packages[(package.from_code, package.to_code)] = package
+        for lang in installed_languages:
+            params["lang_packages"][lang.code] = lang
+            params["lang_names_installed"][lang.name] = lang.code
 
-        bothway_langs = dict()
-        for lang in langs:
-            if (lang, "en") in lang_packages and ("en", lang) in lang_packages:
-                from_entry = lang_packages[(lang, "en")]
-                bothway_langs[from_entry.from_name] = lang
-
-        params["lang_names_installed"] = (dict(sorted(bothway_langs.items()))).copy()
+        params["lang_names_installed"] = dict(
+            sorted(params["lang_names_installed"].items())
+        )
         _w1.CB_inLang.configure(values=list(params["lang_names_installed"].keys()))
 
 
@@ -290,9 +410,7 @@ def validate_params():
             # see if file is syntactically correct
             try:
                 ast.parse(params["input_data"])
-                _w1.L_valError.configure(
-                    font="-family {Segoe UI} -size 9 -weight bold"
-                )
+                _w1.L_valError.configure(font="-family {Segoe UI} -size 9 -weight bold")
                 _w1.L_valError.configure(foreground="#000000")
                 _w1.L_valError.configure(
                     text=f"{params['input_filename']} is syntactically valid."
@@ -301,9 +419,7 @@ def validate_params():
                 _w1.LF_inputFile.configure(foreground="#000000")
             except SyntaxError as error:
                 all_params_valid = False
-                _w1.L_valError.configure(
-                    font="-family {Segoe UI} -size 9 -weight bold"
-                )
+                _w1.L_valError.configure(font="-family {Segoe UI} -size 9 -weight bold")
                 _w1.L_valError.configure(foreground="#d70005")
                 _w1.L_valError.configure(
                     text=f"Syntax error in {params['input_filename']}: {error}"
@@ -417,6 +533,654 @@ def validate_params():
         _w1.B_generate.configure(state="normal")
         _w1.B_generate.configure(activebackground="#63a5b8")
         _w1.B_validate.configure(state="disabled")
+
+
+def translate_name(input: str, outlang: str) -> str:
+    separate_words = split_name(input)
+    unabbrev_sepwords = swap_abbreviations(separate_words)
+    spaced_string = "".join(unabbrev_sepwords)
+    translated_text = ""
+    translate = params["lang_packages"][
+        params["lang_names_installed"][params["selected_inputlang"]]
+    ].get_translation(params["lang_packages"][params["lang_names_installed"][outlang]])
+
+    translated_text = translate.translate(spaced_string)
+    # output_var=''.join(filter(str.isidentifier, translated_text))
+    alphanumeric_chars = string.ascii_letters + "_"
+    output_var = (
+        re.sub(
+            r"[^a-zA-Z0-9]",
+            lambda x: random.choice(alphanumeric_chars),
+            translated_text,
+        )
+    )[:40]
+    return output_var
+
+
+# splits given var/function name into individual words based on naming conventions
+def split_name(input: str) -> list:
+    # Supported Styles: camelCase, PascalCase, snake_case, SCREAMING_SNAKE_CASE, camel_Snake_Case,
+    #                   Pascal_Snake_Case, kebab-case, COBOL-CASE, Train-Case
+    # Unsupported Styles (would need a more complex parser e.g. python-wordsegment which only supports english): flatcase, UPPERCASE
+
+    # if not a single letter
+    if not len(input) == 1:
+        # code based on: https://www.geeksforgeeks.org/python-split-camelcase-string-to-individual-strings/ (method 5)
+        # first parse for '_' or '-'
+        modified_string = list(map(lambda x: "_" if x == "-" else x, input))
+        split_string = "".join(modified_string).split("_")
+        sep_words = list(filter(lambda x: x != "", split_string))
+        # next check split words for any camelCase or PascalCase, avoiding UPPERCASE and single letters
+        # number based strings e.g. 13vals also supported
+        i = 0
+        # while loop as size of list increases as words broken down
+        while i < len(sep_words):
+            # if current word not one char and is not all upper or lowercase, split based on capital letters
+            if len(sep_words[i]) != 1 and not (
+                sep_words[i].isupper() or sep_words[i].islower()
+            ):
+                modified_string = list(
+                    map(lambda x: "_" + x if x.isupper() else x, sep_words[i])
+                )
+                split_string = "".join(modified_string).split("_")
+                sep_subwords = list(filter(lambda x: x != "", split_string))
+                # remove unseparated word from larger list
+                sep_words.pop(i)
+                for k in range(len(sep_subwords)):
+                    sep_words.insert(i + k, sep_subwords[k])
+            i += 1
+        return sep_words
+    else:
+        return [input]
+
+
+def swap_abbreviations(input: list) -> list:
+
+    output = []
+    for i in range(len(input)):
+        curr = input[i].lower()
+        if curr in abbreviations:
+            for word in (abbreviations[curr]).split():
+                output.append(word)
+        else:
+            output.append(curr)
+    return output
+
+
+## Creation of subclass derived from CSTTransformer which allows modified traversal attributes ##
+class VarRename(cst.CSTTransformer):
+
+    ## Allows access to parent node metadata ##
+    METADATA_DEPENDENCIES = (ParentNodeProvider,)
+
+    ############ Function to generate a new synonym for the existing variable using gemini API ############
+
+    def get_synonym(self, original_varname):
+
+        ## Only rename the variable if Gemini has not come up with a synonym for it. Otherwise return the current synonym ##
+        if original_varname not in stats["renamed_vars"]:
+            if random.random() < (float(params["vars_percent"]) * 0.01):
+                new_name = translate_name(original_varname, stats["current_outlang"])
+                stats["renamed_vars"][original_varname] = new_name
+
+                stats["total_vars"] = stats["total_vars"] + 1
+                stats["changed_vars"] = stats["changed_vars"] + 1
+                update_FuncRatio(stats["changed_vars"], stats["total_vars"])
+
+            else:
+                # keep unchanged, add to dict so that it doesn't run this every time an unchanged var is hit
+                stats["renamed_vars"][original_varname] = original_varname
+        return stats["renamed_vars"][original_varname]
+
+    #######################################################################################################
+
+    ######################### Function for transforming the 'Param' type Name nodes #######################
+
+    # Context for function: Variable is present within a functiondef or call. ( Ex: function(variable1, variable2) ).
+
+    def leave_Param(
+        self, original_node: cst.Param, updated_node: cst.Param
+    ) -> cst.Param:
+
+        if isinstance(updated_node.name, cst.Name):
+
+            new_varname = self.get_synonym(updated_node.name.value)
+            updated_node = updated_node.with_changes(
+                name=updated_node.name.with_changes(value=new_varname)
+            )
+
+        return updated_node
+
+    #######################################################################################################
+
+    ######################### Function for transforming the 'For' type Name nodes #########################
+
+    # Context for function: Variable is present within a For statement as a target or iter value. #
+    # (Ex: for variable in variable2:)
+
+    def leave_For(self, original_node: cst.For, updated_node: cst.For) -> cst.For:
+
+        if isinstance(updated_node.target, cst.Name):
+
+            new_varname = self.get_synonym(updated_node.target.value)
+            updated_node = updated_node.with_changes(
+                target=updated_node.target.with_changes(value=new_varname)
+            )
+
+        elif isinstance(updated_node.target, cst.Tuple):
+
+            updated_tuple = updated_node.target
+
+            for i, element in enumerate(updated_tuple.elements):
+
+                if isinstance(element.value, cst.Name):
+
+                    new_varname = self.get_synonym(element.value.value)
+                    new_element = element.with_changes(
+                        value=element.value.with_changes(value=new_varname)
+                    )
+                    updated_tuple = updated_tuple.with_changes(
+                        elements=tuple(updated_tuple.elements[:i])
+                        + (new_element,)
+                        + tuple(updated_tuple.elements[i + 1 :])
+                    )
+
+            updated_node = updated_node.with_changes(target=updated_tuple)
+
+        if isinstance(updated_node.iter, cst.Name):
+
+            new_varname = self.get_synonym(updated_node.iter.value)
+            updated_node = updated_node.with_changes(
+                iter=updated_node.iter.with_changes(value=new_varname)
+            )
+
+        return updated_node
+
+    #######################################################################################################
+
+    ######################### Function for transforming the 'AssignTarget' type Name nodes ################
+
+    # Context for function: Left target value of an assignment operator. (Ex: variable = 5).
+
+    def leave_AssignTarget(
+        self, original_node: cst.AssignTarget, updated_node: cst.AssignTarget
+    ) -> cst.AssignTarget:
+
+        if isinstance(updated_node.target, cst.Name):
+
+            new_varname = self.get_synonym(updated_node.target.value)
+            updated_node = updated_node.with_changes(
+                target=updated_node.target.with_changes(value=new_varname)
+            )
+
+        return updated_node
+
+    #######################################################################################################
+
+    ######################### Function for transforming the 'Attribute' type Name nodes ###################
+
+    # Context for function:
+
+    def leave_Attribute(
+        self, original_node: cst.AssignTarget, updated_node: cst.AssignTarget
+    ) -> cst.AssignTarget:
+
+        if (
+            isinstance(updated_node.value, cst.Name)
+            and updated_node.value.value in stats["renamed_vars"]
+        ):
+
+            new_varname = self.get_synonym(updated_node.value.value)
+            return updated_node.with_changes(
+                value=updated_node.value.with_changes(value=new_varname)
+            )
+
+        if (
+            isinstance(updated_node.attr, cst.Name)
+            and updated_node.attr.value in stats["renamed_vars"]
+        ):
+            new_varname = self.get_synonym(updated_node.attr.value)
+            return updated_node.with_changes(
+                attr=updated_node.attr.with_changes(value=new_varname)
+            )
+
+        return updated_node
+
+    #######################################################################################################
+
+    ######################### Function for transforming the 'Arg' type Name nodes #########################
+
+    # Context for function:
+
+    def leave_Arg(self, original_node: cst.Arg, updated_node: cst.Arg) -> cst.Arg:
+
+        if isinstance(updated_node.value, cst.Name):
+
+            new_varname = self.get_synonym(updated_node.value.value)
+            return updated_node.with_changes(
+                value=updated_node.value.with_changes(value=new_varname)
+            )
+
+        return updated_node
+
+    #######################################################################################################
+
+    """
+    ######################### Function for transforming the 'ImportAlias' type Name nodes #################
+
+    # Context for function:
+
+    def leave_ImportAlias(self, original_node: cst.ImportAlias, updated_node: cst.ImportAlias) -> cst.ImportAlias:
+        alias_node = updated_node.asname
+        if alias_node and alias_node.name.value:
+            new_alias = self.get_synonym(alias_node.name.value)
+            return updated_node.with_deep_changes(alias_node.name, value=new_alias)
+        return updated_node
+    #######################################################################################################
+    """
+
+    ######################### Function for transforming the 'BinaryOperation' type Name nodes #############
+
+    # Context for function:
+
+    def leave_BinaryOperation(
+        self, original_node: cst.BinaryOperation, updated_node: cst.BinaryOperation
+    ) -> cst.BinaryOperation:
+
+        if isinstance(updated_node.left, cst.Name):
+
+            new_left_varname = self.get_synonym(updated_node.left.value)
+            updated_node = updated_node.with_changes(
+                left=updated_node.left.with_changes(value=new_left_varname)
+            )
+
+        if isinstance(updated_node.right, cst.Name):
+
+            new_right_varname = self.get_synonym(updated_node.right.value)
+            updated_node = updated_node.with_changes(
+                right=updated_node.right.with_changes(value=new_right_varname)
+            )
+
+        return updated_node
+
+    #######################################################################################################
+
+    """
+    ######################### Function for transforming the 'AsName' type Name nodes ######################
+
+    # Context for function:
+
+    def leave_AsName(self, original_node: cst.AsName, updated_node: cst.AsName) -> cst.AsName:
+
+        if isinstance(updated_node.name, cst.Name):
+
+            new_varname = self.get_synonym(updated_node.name.value)
+            updated_node = updated_node.with_changes(name=updated_node.name.with_changes(value=new_varname))
+
+        return updated_node
+    #######################################################################################################
+    """
+
+    ######################### Function for transforming the 'Comparison' type Name nodes ##################
+
+    # Context for function:
+
+    def leave_Comparison(
+        self, original_node: cst.Comparison, updated_node: cst.Comparison
+    ) -> cst.Comparison:
+
+        if isinstance(updated_node.left, cst.Name):
+
+            new_left_varname = self.get_synonym(updated_node.left.value)
+            updated_node = updated_node.with_changes(
+                left=updated_node.left.with_changes(value=new_left_varname)
+            )
+
+        return updated_node
+
+    #######################################################################################################
+
+    ######################### Function for transforming the 'Return' type Name nodes #######################
+
+    # Context for function:
+
+    def leave_Return(
+        self, original_node: cst.Return, updated_node: cst.Return
+    ) -> cst.Return:
+
+        if isinstance(updated_node.value, cst.Name):
+
+            new_varname = self.get_synonym(updated_node.value.value)
+            updated_node = updated_node.with_changes(
+                value=updated_node.value.with_changes(value=new_varname)
+            )
+
+        return updated_node
+
+    #######################################################################################################
+
+    def leave_FormattedString(
+        self, original_node: cst.FormattedString, updated_node: cst.FormattedString
+    ) -> cst.FormattedString:
+
+        new_parts = []
+
+        for part in updated_node.parts:
+
+            if isinstance(part, cst.FormattedStringExpression):
+
+                if isinstance(part.expression, cst.Name):
+
+                    new_varname = self.get_synonym(part.expression.value)
+                    new_part = part.with_changes(
+                        expression=part.expression.with_changes(value=new_varname)
+                    )
+                    new_parts.append(new_part)
+
+                else:
+
+                    new_parts.append(part)
+            else:
+
+                new_parts.append(part)
+
+        return updated_node.with_changes(parts=new_parts)
+
+    #######################################################################################################
+
+
+# rename all function defs or aliases (only rename custom functions, not things like print() or math.log)
+class FuncRename(cst.CSTTransformer):
+
+    # rename function names in a "def funcname: " node
+    # FunctionDef node docs: (https://libcst.readthedocs.io/_/downloads/en/latest/pdf/#page=73&zoom=auto,-205,215)
+    def leave_FunctionDef(
+        self, node: cst.FunctionDef, updated_node: cst.FunctionDef
+    ) -> cst.FunctionDef:
+        if updated_node.name.value not in stats["func_name_pairs"]:
+            if random.random() < (float(params["func_percent"]) * 0.01):
+                new_name = translate_name(
+                    updated_node.name.value, stats["current_outlang"]
+                )
+                stats["func_name_pairs"].update({updated_node.name.value: new_name})
+
+                stats["total_funcs"] = stats["total_funcs"] + 1
+                stats["changed_funcs"] = stats["changed_funcs"] + 1
+                update_FuncRatio(stats["changed_funcs"], stats["total_funcs"])
+            else:
+                stats["func_name_pairs"].update(
+                    {updated_node.name.value: updated_node.name.value}
+                )
+        # the name node in function def is a child node, thus to change function name via the FunctionDef parent node, use with_deep_changes via:
+        # (https://libcst.readthedocs.io/en/latest/nodes.html#libcst.CSTNode.with_deep_changes)
+
+        # print("Function def of \'"+updated_node.name.value+"\' has been renamed to \'"+stats["func_name_pairs"][updated_node.name.value]+"\'")
+        return updated_node.with_deep_changes(
+            updated_node.name, value=stats["func_name_pairs"][updated_node.name.value]
+        )
+
+    # rename function names in a "import x as y" node
+    # ImportAlias node docs: (https://libcst.readthedocs.io/_/downloads/en/latest/pdf/#page=78&zoom=auto,-205,314)
+    def leave_ImportAlias(
+        self, node: cst.ImportAlias, updated_node: cst.ImportAlias
+    ) -> cst.ImportAlias:
+        alias_node = updated_node.asname
+        if alias_node:
+            if alias_node.name.value not in stats["func_name_pairs"]:
+                if random.random() < (float(params["func_percent"]) * 0.01):
+                    new_name = translate_name(
+                        alias_node.name.value, stats["current_outlang"]
+                    )
+                    stats["func_name_pairs"].update({alias_node.name.value: new_name})
+
+                    stats["total_funcs"] = stats["total_funcs"] + 1
+                    stats["changed_funcs"] = stats["changed_funcs"] + 1
+                    update_FuncRatio(stats["changed_funcs"], stats["total_funcs"])
+                else:
+                    stats["func_name_pairs"].update(
+                        {alias_node.name.value: alias_node.name.value}
+                    )
+            # print("Import alias of \'"+alias_node.name.value+"\' has been renamed to \'"+stats["func_name_pairs"][alias_node.name.value]+"\'")
+            return updated_node.with_deep_changes(
+                updated_node.asname.name,
+                value=stats["func_name_pairs"][alias_node.name.value],
+            )
+        return updated_node
+
+
+# kept separate from FuncRename to do two-pass and prevent renaming predefined functions like print()
+class CallRename(cst.CSTTransformer):
+
+    # rename function names in a function call node
+    # Call node docs: (https://libcst.readthedocs.io/_/downloads/en/latest/pdf/#page=53&zoom=auto,-205,721)
+    def leave_Call(self, node: cst.Call, updated_node: cst.Call) -> cst.Call:
+
+        # Name node: (https://libcst.readthedocs.io/_/downloads/en/latest/pdf/#page=48&zoom=auto,-205,344)
+        if (type(updated_node.func)) is cst._nodes.expression.Name:
+            if (updated_node.func.value) in stats["func_name_pairs"]:
+
+                # print("Function call of \'"+updated_node.func.value+"\' has been renamed to \'"+stats["func_name_pairs"][updated_node.func.value]+"\'")
+                return updated_node.with_deep_changes(
+                    updated_node.func,
+                    value=stats["func_name_pairs"][updated_node.func.value],
+                )
+
+        # for attributes, aka package.function(), only the package can be potentially custom (e.g. 'import math as blah', 'blah.log()')
+        # as if you import a subsect and rename it, it will be a normal function call (e.g. 'from math import log as blah', funct call would be
+        #                                                                                   'blah()' not 'math.blah()'
+        # Attribute node: (https://libcst.readthedocs.io/_/downloads/en/latest/pdf/#page=48&zoom=auto,-205,344)
+        elif (type(updated_node.func)) is cst._nodes.expression.Attribute:
+            if updated_node.func.value.value in stats["func_name_pairs"]:
+
+                # print("Function call of \'"+updated_node.func.value.value+"."+updated_node.func.attr.value+"\' has been renamed to \'"+stats["func_name_pairs"][updated_node.func.value.value]+"."+updated_node.func.attr.value+"\'")
+                return updated_node.with_deep_changes(
+                    updated_node.func.value,
+                    value=stats["func_name_pairs"][updated_node.func.value.value],
+                )
+        return updated_node
+
+
+# Logic renamer subclass definition #
+class LogicRenamer(cst.CSTTransformer):
+
+    METADATA_DEPENDENCIES = (
+        ParentNodeProvider,
+    )  # Allow access to parent node attributes # #
+
+    def leave_While(
+        self, original_node: cst.While, updated_node: cst.While
+    ) -> cst.For:  # Handles logic swapping for While -> For looping #
+
+        if random.random() < (float(params["logic_percent"]) * 0.01):
+
+            if isinstance(
+                updated_node.test, cst.Comparison
+            ):  # If 'while' loop contains any type of logical comparison ( >, <, ==, >=, <=, etc.) #
+
+                if len(updated_node.test.comparisons) == 1 and isinstance(
+                    updated_node.test.comparisons[0].operator, cst.LessThan
+                ):  # Handles < logical comparison #
+                    return LessThan_Handler(updated_node)
+
+                if len(updated_node.test.comparisons) == 1 and isinstance(
+                    updated_node.test.comparisons[0].operator, cst.GreaterThan
+                ):  # Handles > logical comparison #
+                    return GreaterThan_Handler(updated_node)
+
+                return updated_node
+
+        else:
+
+            return updated_node
+
+    def leave_If(self, original_node: cst.If, updated_node: cst.If) -> cst.CSTNode:
+
+        if random.random() < (float(params["logic_percent"]) * 0.01):
+
+            transformed_node = If_Handler(updated_node)
+
+            return transformed_node
+
+        else:
+
+            return updated_node
+
+    def leave_For(self, original_node: cst.For, updated_node: cst.For) -> cst.While:
+
+        if random.random() < (float(params["logic_percent"]) * 0.01):
+
+            transformed_node = For_Handler(updated_node)
+
+            return transformed_node
+
+        else:
+
+            return updated_node
+
+
+# Logic for swapping Less Than symbols in While loops #
+def LessThan_Handler(updated_node):
+
+    if isinstance(updated_node.test.left, cst.Name):
+
+        loop_var = updated_node.test.left  # Assigns to var if on LHS of operator #
+        num_bound = updated_node.test.comparisons[
+            0
+        ].comparator  # Assigns to integer that terminates loop #
+
+        stats["total_logic"] = stats["total_logic"] + 1
+        stats["changed_logic"] = stats["changed_logic"] + 1
+        update_FuncRatio(stats["changed_logic"], stats["total_logic"])
+
+        # Return new CST module structure back into the original CST #
+        return cst.For(
+            target=loop_var,
+            iter=cst.Call(
+                func=cst.Name("range"),
+                args=[cst.Arg(loop_var), cst.Arg(num_bound)],
+            ),
+            body=updated_node.body,
+            orelse=updated_node.orelse,
+        )
+
+
+# Logic for swapping Greater Than symbols in While loops #
+def GreaterThan_Handler(updated_node):
+
+    if isinstance(updated_node.test.left, cst.Name):
+
+        loop_var = updated_node.test.left  # Assigns to var if on LHS of operator #
+        num_bound = updated_node.test.comparisons[
+            0
+        ].comparator  # Assigns to integer that terminates loop #
+        step = step = cst.UnaryOperation(
+            operator=cst.Minus(), expression=cst.Integer("1")
+        )  # Set increment value #
+
+        stats["total_logic"] = stats["total_logic"] + 1
+        stats["changed_logic"] = stats["changed_logic"] + 1
+        update_FuncRatio(stats["changed_logic"], stats["total_logic"])
+
+        # Return new CST For loop module back into the original CST #
+        return cst.For(
+            target=loop_var,
+            iter=cst.Call(
+                func=cst.Name("range"),
+                args=[
+                    cst.Arg(loop_var),
+                    cst.Arg(num_bound),
+                    cst.Arg(step),
+                ],
+            ),
+            body=updated_node.body,
+            orelse=updated_node.orelse,
+        )
+
+
+# Logic for swapping if statements with function def and call #
+def If_Handler(updated_node):
+
+    func_name = "function"  # Defines the name of the function which calls original if statement #
+
+    # Creation of function definition node #
+    func_def = cst.FunctionDef(
+        name=cst.Name(func_name),
+        params=cst.Parameters(),
+        body=cst.IndentedBlock(body=[updated_node]),
+    )
+
+    # Creation of explicit function call node #
+    func_call = cst.Expr(
+        value=cst.Call(
+            func=cst.Name(func_name),
+            args=[],
+            whitespace_after_func=cst.SimpleWhitespace(""),
+        )
+    )
+
+    stats["total_logic"] = stats["total_logic"] + 1
+    stats["changed_logic"] = stats["changed_logic"] + 1
+    update_FuncRatio(stats["changed_logic"], stats["total_logic"])
+
+    # Returns multiple nodes which consist of both a function def and a function call #
+    return cst.FlattenSentinel([func_def, func_call])
+
+
+# Logic for swapping For loops to While loops encountered while traversing CST #
+def For_Handler(updated_node):
+
+    loop_var = updated_node.target  # Variable within For loop #
+
+    loop_args = updated_node.iter.args  # List of loop arguments #
+    start = loop_args[0].value  # Starting integer condition #
+    stop = loop_args[1].value  # Ending integer condition #
+
+    if len(loop_args) == 3:
+        step = loop_args[2].value
+    else:
+
+        if isinstance(start, cst.Integer) and isinstance(stop, cst.Integer):
+            step_value = "-1" if int(start.value) > int(stop.value) else "1"
+            step = cst.Integer(step_value)
+        else:
+            step = cst.Integer("1")
+
+    operation = (
+        cst.LessThan()
+        if (isinstance(step, cst.Integer) and int(step.value) > 0)
+        else cst.GreaterThan()
+    )  # Type of operation (+,-,>,<, etc.) #
+
+    # Creation of While loop node #
+    while_loop = cst.While(
+        test=cst.Comparison(
+            left=loop_var,
+            comparisons=[cst.ComparisonTarget(operator=operation, comparator=stop)],
+        ),
+        body=updated_node.body,
+        orelse=updated_node.orelse,
+    )
+
+    # Creation of variable increment line living within while loop #
+    increment = cst.SimpleStatementLine(
+        body=[
+            cst.Assign(
+                targets=[cst.AssignTarget(target=loop_var)],
+                value=cst.BinaryOperation(
+                    left=loop_var, operator=cst.Add(), right=step
+                ),
+            )
+        ]
+    )
+
+    updated_body = list(while_loop.body.body) + [increment]
+    while_loop = while_loop.with_changes(body=cst.IndentedBlock(body=updated_body))
+
+    stats["total_logic"] = stats["total_logic"] + 1
+    stats["changed_logic"] = stats["changed_logic"] + 1
+    update_FuncRatio(stats["changed_logic"], stats["total_logic"])
+
+    return cst.FlattenSentinel([while_loop])
 
 
 if __name__ == "__main__":

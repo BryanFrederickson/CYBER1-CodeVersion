@@ -99,6 +99,7 @@ class Toplevel1:
         self.B_generate.configure(highlightcolor="#000000")
         self.B_generate.configure(state="disabled")
         self.B_generate.configure(text="Generate")
+        self.B_generate.configure(command=Python_Obfuscator_support.generate_clones)
 
         self.B_validate = tk.Button(self.F_params)
         self.B_validate.place(
@@ -612,6 +613,7 @@ class Toplevel1:
 
         self.C_logCurr = Python_Obfuscator_support.Custom2(self.F_generate)
         self.C_logCurr.place(relx=0.035, rely=0.344, relheight=0.553, relwidth=0.457)
+        self.C_logCurr.configure(state="disabled")
 
         self.L_generateStatus = tk.Label(self.F_generate)
         self.L_generateStatus.place(relx=0.346, rely=0.899, height=31, width=364)
