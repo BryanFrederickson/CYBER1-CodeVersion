@@ -12,38 +12,205 @@ import tkinter.scrolledtext as st
 from tkinter import filedialog
 import os
 
+import argostranslate.package
+
+# time consuming to boot when enabled
+# import argostranslate.translate
+
 import Python_Obfuscator
 
-_debug = True # False to eliminate debug printing from callback functions.
+_debug = True  # False to eliminate debug printing from callback functions.
+
 
 def init_params():
     global params
-    params=dict()
-    params["input_filename"]=""
-    params["input_data"]=""
-    params["output_dir"]=""
+    params = dict()
+    params["input_filename"] = ""
+    params["input_data"] = ""
+    params["output_dir"] = ""
+
+    params["clones_min"] = 1
+    params["clones_max"] = 20
+    params["clones_count"] = ""
+    params["clones_count_valid"] = False
+
+    params["logic_min_percent"] = 0
+    params["logic_max_percent"] = 100
+    params["logic_percent"] = 0
+    params["logic_percent_valid"] = False
+
+    params["func_min_percent"] = 0
+    params["func_max_percent"] = 100
+    params["func_percent"] = 0
+    params["func_percent_valid"] = False
+
+    params["vars_min_percent"] = 0
+    params["vars_max_percent"] = 100
+    params["vars_percent"] = 0
+    params["vars_percent_valid"] = False
+
+    params["lang_names_installed"] = dict()
+    params["selected_inputlang"] = ""
+    params["selected_outputlangs"] = list()
 
 
 def main(*args):
-    '''Main entry point for the application.'''
+    init_params()
+    """Main entry point for the application."""
     global root
     root = tk.Tk()
-    root.protocol( 'WM_DELETE_WINDOW' , root.destroy)
+    root.protocol("WM_DELETE_WINDOW", root.destroy)
     # Creates a toplevel widget.
     global _top1, _w1
     _top1 = root
     _w1 = Python_Obfuscator.Toplevel1(_top1)
-    init_params()
+    init_langs()
+    init_scrolledCheckList()
+    bind_entries()
     root.mainloop()
+
 
 Custom = ScrolledCheckedListBox
 Custom2 = st.ScrolledText
 
+def disable_genButton():
+    _w1.B_generate.configure(background="#809296")
+    _w1.B_generate.configure(disabledforeground="#4c5659")
+    _w1.B_generate.configure(state="disabled")
+    _w1.B_validate.configure(state="normal")
+
+def init_langs():
+    installed_packages = argostranslate.package.get_installed_packages()
+    if not installed_packages:
+        _w1.L_transError.configure(
+            text='No languages installed. Translation disabled. See "Argos Translate Language Installer" on repo for install guide.'
+        )
+        _w1.E_transFuncProb.configure(state="disabled")
+        _w1.E_transVarProb.configure(state="disabled")
+        params["func_percent"] = 0
+        params["func_percent_valid"] = True
+
+        params["vars_percent"] = 0
+        params["vars_percent_valid"] = True
+        _w1.CB_inLang.configure(state="disabled")
+    else:
+        langs = set()
+        lang_packages = dict()
+        for package in installed_packages:
+            langs.add(package.from_code)
+            lang_packages[(package.from_code, package.to_code)] = package
+
+        bothway_langs = dict()
+        for lang in langs:
+            if (lang, "en") in lang_packages and ("en", lang) in lang_packages:
+                from_entry = lang_packages[(lang, "en")]
+                bothway_langs[from_entry.from_name] = lang
+
+        params["lang_names_installed"] = (dict(sorted(bothway_langs.items()))).copy()
+        _w1.CB_inLang.configure(values=list(params["lang_names_installed"].keys()))
+
+
+def init_scrolledCheckList():
+    _w1.C_transOutLangSelect.cback = on_scl_click
+    _w1.C_transOutLangSelect.load(list(params["lang_names_installed"].keys()))
+
+
+def on_scl_click(s=None):
+    # ======================================================
+    # On event, scrolled frame returns a list containing:
+    #    item number selected
+    #    text of checkbox selected
+    # ======================================================
+    # current_count = len(w.C_scrolledChecklist.get())
+    # w.L_langsInstallCount.config(text=f"Languages to Install: {current_count}")
+    # if current_count > 0:
+    # w.B_install.configure(state="normal")
+    # else:
+    # w.B_install.configure(state="disabled")
+    _w1.LF_transOutLangs.configure(
+        text=f"Output Languages ({len(_w1.C_transOutLangSelect.get())})"
+    )
+    disable_genButton()
+
+
+def bind_entries():
+    _w1.E_numClones.bind(
+        "<KeyRelease>",
+        lambda e: is_int_inrange(
+            e.widget,
+            "clones_min",
+            "clones_max",
+            "clones_count",
+            "clones_count_valid",
+        ),
+    )
+
+    _w1.L_logicObfscProbRange.configure(
+        text=f"[{params["logic_min_percent"]}-{params["logic_max_percent"]}]"
+    )
+    _w1.E_logicObfscProb.bind(
+        "<KeyRelease>",
+        lambda e: is_int_inrange(
+            e.widget,
+            "logic_min_percent",
+            "logic_max_percent",
+            "logic_percent",
+            "logic_percent_valid",
+        ),
+    )
+
+    _w1.L_transFuncRange.configure(
+        text=f"[{params["func_min_percent"]}-{params["func_max_percent"]}]"
+    )
+    _w1.E_transFuncProb.bind(
+        "<KeyRelease>",
+        lambda e: is_int_inrange(
+            e.widget,
+            "func_min_percent",
+            "func_max_percent",
+            "func_percent",
+            "func_percent_valid",
+        ),
+    )
+
+    _w1.L_transVarRange.configure(
+        text=f"[{params["vars_min_percent"]}-{params["vars_max_percent"]}]"
+    )
+    _w1.E_transVarProb.bind(
+        "<KeyRelease>",
+        lambda e: is_int_inrange(
+            e.widget,
+            "vars_min_percent",
+            "vars_max_percent",
+            "vars_percent",
+            "vars_percent_valid",
+        ),
+    )
+
+    _w1.CB_inLang.bind('<<ComboboxSelected>>', lambda event: disable_genButton())
+
+
+# for input entries, shows if input is valid for being an
+# integer in specified range
+# code adapted from: https://stackoverflow.com/a/60983215
+def is_int_inrange(curr_entry, min_val, max_val, curr_val, param_valid):
+    disable_genButton()
+    try:
+        val = int(curr_entry.get().strip())
+        validity = params[min_val] <= val <= params[max_val]
+        params[curr_val] = val
+    except ValueError:
+        validity = False
+    curr_entry.configure(fg="black" if validity else "red")
+    params[param_valid] = validity
+
+
 def upload_file(event=None):
-    _w1.L_inputError.configure(font="-family {Segoe UI} -size 9 -weight bold -underline 1")
-    _w1.L_inputError.configure(foreground="#d70005")
+    params["input_filename"] = ""
+    params["input_data"] = ""
+    disable_genButton()
     inputpath = filedialog.askopenfilename(
-        #initialdir=os.getcwd(),
+        # initialdir=os.getcwd(),
         initialdir=os.path.dirname(__file__),
         title="Select Python File",
         filetypes=[("Python Source File", "*.py")],
@@ -51,51 +218,173 @@ def upload_file(event=None):
     if inputpath:
         try:
             with open(inputpath, "r") as input_file:
-                params["input_filename"]=os.path.basename(inputpath)
-                params["input_data"]=input_file.read()
-                _w1.E_inputFilePath.configure(state='normal')
+                params["input_filename"] = os.path.basename(inputpath)
+                params["input_data"] = input_file.read()
+                _w1.E_inputFilePath.configure(state="normal")
                 _w1.E_inputFilePath.delete(0, tk.END)
                 _w1.E_inputFilePath.insert(tk.END, inputpath)
-                _w1.E_inputFilePath.configure(state='readonly')
+                _w1.E_inputFilePath.configure(state="readonly")
                 _w1.E_inputFilePath.xview_moveto(1)
                 _w1.L_inputError.configure(text="")
         except Exception:
-            params["input_filename"]=""
-            params["input_data"]=""
-            _w1.E_inputFilePath.configure(state='normal')
+            _w1.E_inputFilePath.configure(state="normal")
             _w1.E_inputFilePath.delete(0, tk.END)
-            _w1.E_inputFilePath.configure(state='readonly')
+            _w1.E_inputFilePath.configure(state="readonly")
             _w1.L_inputError.configure(text="Error reading file.")
     else:
-        params["input_filename"]=""
-        params["input_data"]=""
-        _w1.E_inputFilePath.configure(state='normal')
+        _w1.E_inputFilePath.configure(state="normal")
         _w1.E_inputFilePath.delete(0, tk.END)
-        _w1.E_inputFilePath.configure(state='readonly')
+        _w1.E_inputFilePath.configure(state="readonly")
         _w1.L_inputError.configure(text="No valid file selected.")
 
+
 def select_outDir(event=None):
-    _w1.L_outputError.configure(font="-family {Segoe UI} -size 9 -weight bold -underline 1")
-    _w1.L_outputError.configure(foreground="#d70005")
-    out_dir=filedialog.askdirectory(initialdir=os.path.dirname(__file__))
+    params["output_dir"] = ""
+    disable_genButton()
+    out_dir = filedialog.askdirectory(initialdir=os.path.dirname(__file__))
     if out_dir:
-        params["output_dir"]=out_dir
-        _w1.E_outputDirectory.configure(state='normal')
+        params["output_dir"] = out_dir
+        _w1.E_outputDirectory.configure(state="normal")
         _w1.E_outputDirectory.delete(0, tk.END)
         _w1.E_outputDirectory.insert(tk.END, out_dir)
-        _w1.E_outputDirectory.configure(state='readonly')
+        _w1.E_outputDirectory.configure(state="readonly")
         _w1.E_outputDirectory.xview_moveto(1)
         _w1.L_outputError.configure(text="")
     else:
-        params["output_dir"]=""
-        _w1.E_outputDirectory.configure(state='normal')
+        _w1.E_outputDirectory.configure(state="normal")
         _w1.E_outputDirectory.delete(0, tk.END)
-        _w1.E_outputDirectory.configure(state='readonly')
+        _w1.E_outputDirectory.configure(state="readonly")
         _w1.L_outputError.configure(text="No directory selected.")
 
-if __name__ == '__main__':
+
+# used by both validate params button AND generate button
+# for generate button, will proceed to generation if still valid
+def validate_params():
+    # does not immediate return/break when invalid param encountered,
+    # tests every param so user can fix all their mistakes at once
+
+    all_params_valid = True
+
+    # leave default error text if it exists, else
+    # check params
+
+    # check input params
+    if not _w1.L_inputError["text"]:
+        if not params["input_data"]:
+            _w1.L_inputError.configure(text="Input file empty.")
+            all_params_valid = False
+            _w1.LF_inputFile.configure(foreground="#d70005")
+        else:
+            _w1.L_inputError.configure(text="")
+            _w1.LF_inputFile.configure(foreground="#000000")
+            # check syntactic correctness
+            print("blah")
+    elif not params["input_filename"]:
+        _w1.LF_inputFile.configure(foreground="#d70005")
+    else:
+        _w1.L_inputError.configure(text="")
+        _w1.LF_inputFile.configure(foreground="#000000")
+
+    # check output params
+    if not _w1.L_outputError["text"]:
+        if not params["output_dir"]:
+            _w1.LF_outputFiles.configure(foreground="#d70005")
+            _w1.L_outputError.configure(text="No directory selected.")
+            all_params_valid = False
+        elif not params["clones_count_valid"]:
+            _w1.LF_outputFiles.configure(foreground="#d70005")
+            _w1.L_outputError.configure(text="Invalid clone count.")
+            all_params_valid = False
+        else:
+            _w1.LF_outputFiles.configure(foreground="#000000")
+            _w1.L_outputError.configure(text="")
+    elif not params["output_dir"]:
+        _w1.LF_outputFiles.configure(foreground="#d70005")
+    else:
+        _w1.LF_outputFiles.configure(foreground="#000000")
+        _w1.L_outputError.configure(text="")
+
+    # check logic obfuscation params
+    '''
+    cannot figure out why logic Obfsc LabelFrame doesn't visually update 
+    with the color no matter where in this ENTIRE file I try to call it.
+    literally every other label frame works.
+    _w1.LF_logicObfsc["foreground"]="#d70005" but it doesn't update
+    '''
+    if not params["logic_percent_valid"]:
+        _w1.LF_logicObfsc.configure(foreground="#d70005")
+        #root.update() # doesn't work either
+        #root.after(1)
+        _w1.L_logicObfscProb.configure(foreground="#d70005")
+        all_params_valid = False
+    else:
+        _w1.LF_logicObfsc.configure(foreground="#000000")
+        _w1.L_logicObfscProb.configure(foreground="#000000")
+
+    # check translation params
+    translation_error_full = ""
+
+    if not params["func_percent_valid"]:
+        translation_error_full += "Invalid Function probability. "
+        _w1.LF_transProbs.configure(foreground="#d70005")
+        all_params_valid = False
+    else:
+        _w1.LF_transProbs.configure(foreground="#000000")
+    if not params["vars_percent_valid"]:
+        translation_error_full += "Invalid Variable probability. "
+        _w1.LF_transProbs.configure(foreground="#d70005")
+        all_params_valid = False
+    else:
+        _w1.LF_transProbs.configure(foreground="#000000")
+
+    valid_probs_butzero = (
+        params["func_percent_valid"]
+        and params["vars_percent_valid"]
+        and params["func_percent"] == 0
+        and params["vars_percent"] == 0
+    )
+
+    # check translation percentages, because if 0% for both,
+    # languages don't need to be selected (see init_langs, if none installed
+    # then disable translation)
+    # AKA if translation not explicitly disabled, check langs
+    if not valid_probs_butzero:
+        # check source language
+        inlang=_w1.CB_inLang.get()
+        if not inlang:
+            translation_error_full += "No source language. "
+            _w1.LF_transInLang.configure(foreground="#d70005")
+            all_params_valid = False
+        else:
+            params["selected_inputlang"]=inlang
+            _w1.LF_transInLang.configure(foreground="#000000")
+        
+        # check output languages
+        outlangs=_w1.C_transOutLangSelect.get()
+        if len(outlangs)==0:
+            translation_error_full += "No output languages. "
+            _w1.LF_transOutLangs.configure(foreground="#d70005")
+            all_params_valid = False
+        elif inlang and (params["selected_inputlang"] in outlangs):
+            translation_error_full += "Source language also in output languages. "
+            _w1.LF_transOutLangs.configure(foreground="#d70005")
+            all_params_valid = False
+        else:
+            params["selected_outputlangs"]=outlangs.copy()
+            _w1.LF_transOutLangs.configure(foreground="#000000")
+    
+    _w1.L_transError.configure(text=translation_error_full)
+
+    if all_params_valid:
+        # if validated, don't need to validate again, so disabled here, 
+        # and allow generation
+        # when any input param is changed, generate button is disabled 
+        # and validate button enabled
+        _w1.B_generate.configure(background="#70b2c4")
+        _w1.B_generate.configure(state="normal")
+        _w1.B_generate.configure(activebackground="#63a5b8")
+        _w1.B_validate.configure(state="disabled")
+
+
+if __name__ == "__main__":
     Python_Obfuscator.start_up()
-
-
-
-

@@ -188,7 +188,7 @@ class ScrolledCheckedListBox(tk.Frame):
             # cb[j].bind('<ButtonRelease-1>', self.select_button)
             cb[j].bind('<Button-1>', self.select_button)
             cb[j].config(anchor="w")
-            cb[j].config(width=30)
+            cb[j].config(width=15)
             cb[j].config(variable=vars[-1])
             cb[j].cntr=j
             cb[j].config(command=self.select_button_cmd)

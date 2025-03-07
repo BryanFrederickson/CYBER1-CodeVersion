@@ -64,29 +64,29 @@ class Toplevel1:
         self.F_params.configure(highlightbackground="#d9d9d9")
         self.F_params.configure(highlightcolor="#000000")
 
-        self.LF_params = tk.Label(self.F_params)
-        self.LF_params.place(relx=0.017, rely=0.0, relheight=0.08
+        self.L_params = tk.Label(self.F_params)
+        self.L_params.place(relx=0.017, rely=0.0, relheight=0.08
                 , relwidth=0.6)
-        self.LF_params.configure(activebackground="#d9d9d9")
-        self.LF_params.configure(activeforeground="black")
-        self.LF_params.configure(anchor='w')
-        self.LF_params.configure(background="#d9d9d9")
-        self.LF_params.configure(compound='left')
-        self.LF_params.configure(disabledforeground="#a3a3a3")
-        self.LF_params.configure(font="-family {Segoe UI} -size 12 -weight bold")
-        self.LF_params.configure(foreground="#000000")
-        self.LF_params.configure(highlightbackground="#d9d9d9")
-        self.LF_params.configure(highlightcolor="#000000")
-        self.LF_params.configure(text="Generation Parameters")
+        self.L_params.configure(activebackground="#d9d9d9")
+        self.L_params.configure(activeforeground="black")
+        self.L_params.configure(anchor='w')
+        self.L_params.configure(background="#d9d9d9")
+        self.L_params.configure(compound='left')
+        self.L_params.configure(disabledforeground="#a3a3a3")
+        self.L_params.configure(font="-family {Segoe UI} -size 12 -weight bold")
+        self.L_params.configure(foreground="#000000")
+        self.L_params.configure(highlightbackground="#d9d9d9")
+        self.L_params.configure(highlightcolor="#000000")
+        self.L_params.configure(text="Generation Parameters")
 
         self.B_generate = tk.Button(self.F_params)
         self.B_generate.place(relx=0.81, rely=0.848, height=46, width=97
                 , bordermode='ignore')
         self.B_generate.configure(activebackground="#d9d9d9")
         self.B_generate.configure(activeforeground="black")
-        self.B_generate.configure(background="#d9d9d9")
+        self.B_generate.configure(background="#809296")
         self.B_generate.configure(borderwidth="3")
-        self.B_generate.configure(disabledforeground="#a3a3a3")
+        self.B_generate.configure(disabledforeground="#4c5659")
         self.B_generate.configure(font="-family {Segoe UI} -size 12 -weight bold")
         self.B_generate.configure(foreground="#000000")
         self.B_generate.configure(highlightbackground="#d9d9d9")
@@ -108,13 +108,14 @@ class Toplevel1:
         self.B_validate.configure(highlightcolor="#000000")
         self.B_validate.configure(text="Validate Params")
         self.B_validate.configure(wraplength="93")
+        self.B_validate.configure(command=Python_Obfuscator_support.validate_params)
 
         self.L_valError = tk.Label(self.F_params)
-        self.L_valError.place(relx=0.02, rely=0.875, height=25, width=340
+        self.L_valError.place(relx=0.02, rely=0.84, height=54, width=340
                 , bordermode='ignore')
         self.L_valError.configure(activebackground="#d9d9d9")
         self.L_valError.configure(activeforeground="black")
-        self.L_valError.configure(anchor='e')
+        self.L_valError.configure(anchor='nw', justify="left")
         self.L_valError.configure(background="#d9d9d9")
         self.L_valError.configure(compound='left')
         self.L_valError.configure(cursor="arrow")
@@ -136,6 +137,7 @@ class Toplevel1:
         self.LF_translation.configure(cursor="arrow")
         self.LF_translation.configure(highlightbackground="#d9d9d9")
         self.LF_translation.configure(highlightcolor="#000000")
+
 
         self.LF_transOutLangs = tk.LabelFrame(self.LF_translation)
         self.LF_transOutLangs.place(relx=0.5, rely=0.09, relheight=0.703
@@ -276,21 +278,21 @@ class Toplevel1:
         self.E_transVarProb.configure(selectforeground="black")
 
         self.L_transError = tk.Label(self.LF_translation)
-        self.L_transError.place(relx=0.029, rely=0.807, height=47, width=316
+        self.L_transError.place(relx=0.029, rely=0.807, height=52, width=316
                 , bordermode='ignore')
         self.L_transError.configure(activebackground="#d9d9d9")
         self.L_transError.configure(activeforeground="black")
-        self.L_transError.configure(anchor='se')
+        self.L_transError.configure(anchor='nw', justify="left")
         self.L_transError.configure(background="#d9d9d9")
         self.L_transError.configure(compound='left')
         self.L_transError.configure(cursor="arrow")
         self.L_transError.configure(disabledforeground="#a3a3a3")
-        self.L_transError.configure(font="-family {Segoe UI} -size 9 -weight bold -underline 1")
+        self.L_transError.configure(font="-family {Segoe UI} -size 9 -weight bold")
         self.L_transError.configure(foreground="#d70005")
         self.L_transError.configure(highlightbackground="#d9d9d9")
         self.L_transError.configure(highlightcolor="#000000")
-        self.L_transError.configure(text="Error:")
-        self.L_transError.configure(wraplength="310")
+        self.L_transError.configure(text="")
+        self.L_transError.configure(wraplength="316")
 
         self.LF_transInLang = tk.LabelFrame(self.LF_translation)
         self.LF_transInLang.place(relx=0.029, rely=0.09, relheight=0.214
@@ -322,6 +324,7 @@ class Toplevel1:
         self.LF_logicObfsc.configure(foreground="#000000")
         self.LF_logicObfsc.configure(text="Logic Obfuscation")
         self.LF_logicObfsc.configure(background="#d9d9d9")
+        self.LF_logicObfsc.configure(cursor="arrow")
         self.LF_logicObfsc.configure(highlightbackground="#d9d9d9")
         self.LF_logicObfsc.configure(highlightcolor="#000000")
 
@@ -696,7 +699,8 @@ class Toplevel1:
                 , relwidth=0.457)
         
         self.F_params.tkraise()
-
+        
+    
 def start_up():
     Python_Obfuscator_support.main()
 
