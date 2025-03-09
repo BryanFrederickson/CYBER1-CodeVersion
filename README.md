@@ -21,7 +21,7 @@ This program is made to help install specific offline translation packages from 
 
 #### Prerequisites
 These instructions are written primarily for modern Windows. For installing prerqs on Windows, run Command Prompt as administrator.
-1. Python3 - Can be installed in multiple ways. The easiest way for Windows is via [installers](https://www.python.org/downloads/windows/). Check it's installed via `python --version` in terminal/command line and that the python installation was added to PATH environment variable.
+1. Python3 [3.9 or earlier] - Can be installed in multiple ways. The easiest way for Windows is via [installers](https://www.python.org/downloads/release/python-3913/). Check it's installed via `python --version` in terminal/command line and that the python installation was added to PATH environment variable.
 2. tkinter - The Python library used to render a GUI for our programs. The library is usually included with Python installs, but you can check via `pip install tk` on Windows or `sudo apt-get install python3-tk` on Ubuntu.
 3. [Argos Translate](https://github.com/argosopentech/argos-translate) - A library for offline language translation in Python. To install, simply run `pip install argostranslate` (more info in linked Repo).
 
