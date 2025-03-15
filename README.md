@@ -14,7 +14,7 @@ Develop a tool to generate unique permutations of a given C/C++ or Python source
 
 This project is meant to help signature-based intrusion detection by being able to generate semantic copies of known code, to better identify malicious software that has been changed to avoid detection.
 
-Rough prototypes can be found in the `python_notebook_tests` branch, which has been kept separate to ensure that main contains only accessible, functional code.
+Users will primarily interact with the Argos Translate Language Installer and Python Obfuscator.
 
 ## Argos Translate Language Installer
 This program is made to help install specific offline translation packages from Argos Translate for use in Variable and Function Obfuscation.
@@ -27,8 +27,9 @@ These instructions are written primarily for modern Windows. For installing prer
 
 #### Installation and General Use
 1. Navigate to the [`Langs_Installer`](https://github.com/BryanFrederickson/CYBER1-CodeVersion/tree/76643a49d483dd935053f1e334928d436a46c7b2/Langs_Installer) folder on the Main Branch and download all of the files inside. Make sure when running any of the Python files that they are all in the same directory on your system.
-2. `ArgosTranslate_PreReqs_Installer.py`/`ArgosTranslate_PreReqs_Installer_support.py` - Due to the way the GUI's frontend (main file) and backend (`*_support.py`) work, you can run the program from either file. This program will let the user pick and choose from available language packages and automatically install them for the user. `ScrolledCheckedListBox.py` is a dependency and does nothing on its own, serving as a custom tkinter widget for making a scrollable checklist.
-3. `ArgosTranslate_Installed_Langs.py` - This file does not contain a GUI and the code must be manually configured (commenting out options) to run as desired. The python script can be used to uninstall all installed Argos Translate language packages as well as simply print all packages currently installed.
+2. `ArgosTranslate_PreReqs_Installer.py`/`ArgosTranslate_PreReqs_Installer_support.py` - Due to the way the GUI's frontend (main file) and backend (`*_support.py`) work, you can run the program from either file. This program will let the user pick and choose from available language packages and automatically install them for the user.
+3. `ScrolledCheckedListBox.py` is a dependency and does nothing on its own, serving as a custom tkinter widget for making a scrollable checklist.
+4. `ArgosTranslate_Installed_Langs.py` - This file does not contain a GUI and the code must be manually configured (commenting out options) to run as desired. The python script can be used to uninstall all installed Argos Translate language packages as well as simply print all packages currently installed.
 
 ## Python Obfuscator
 WIP, see ^ Argos Translate Language Installer for prerequisites. Also install LibCST for parsing via `pip install libcst`
