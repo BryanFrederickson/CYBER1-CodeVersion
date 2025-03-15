@@ -9,7 +9,7 @@ import tkinter as tk
 import tkinter.scrolledtext as st
 import tkinter.ttk as ttk
 from tkinter.constants import *
-from ScrolledCheckedListBox import ScrolledCheckedListBox
+from ScrolledCheckedListBox_LangInstall import ScrolledCheckedListBox
 import argostranslate.package
 from tkinter import font
 
