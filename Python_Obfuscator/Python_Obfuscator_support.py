@@ -276,7 +276,20 @@ def bind_entries():
             "clones_count_valid",
         ),
     )
+    
+    #
+    #
+    # DISABLED LOGIC
+    #
+    #
+    _w1.L_logicObfscProb.configure(text="Probability: [Disabled]")
+    _w1.E_logicObfscProb.delete(0,END)
+    _w1.E_logicObfscProb.insert(0,'0')
+    _w1.E_logicObfscProb.configure(state="disabled")
+    params["logic_percent"]=0
+    params['logic_percent_valid']=True
 
+    '''
     _w1.L_logicObfscProbRange.configure(
         text=f"[{params['logic_min_percent']}-{params['logic_max_percent']}]"
     )
@@ -290,6 +303,7 @@ def bind_entries():
             "logic_percent_valid",
         ),
     )
+    '''
 
     _w1.L_transFuncRange.configure(
         text=f"[{params['func_min_percent']}-{params['func_max_percent']}]"
