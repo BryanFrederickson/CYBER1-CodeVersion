@@ -7,7 +7,7 @@
 
 import tkinter as tk
 from tkinter.constants import *
-from ScrolledCheckedListBox import ScrolledCheckedListBox
+from ScrolledCheckedListBox_PyObfsc import ScrolledCheckedListBox
 import tkinter.scrolledtext as st
 from tkinter import filedialog
 import os
