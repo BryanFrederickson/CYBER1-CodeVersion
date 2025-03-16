@@ -42,7 +42,7 @@ The following prerequisites are the same as above for the Argos Translate Langua
 2. tkinter - The Python library used to render a GUI for our programs. The library is usually included with Python installs, but you can check via `pip install tk` on Windows or `sudo apt-get install python3-tk` on Ubuntu.
 3. [Argos Translate](https://github.com/argosopentech/argos-translate) - A library for offline language translation in Python. To install, simply run `pip install argostranslate` (more info in linked Repo).
 
-Additionally
+Additionally required:
 
 4. [LibCST](https://github.com/Instagram/LibCST) - A library for converting Python source code to and from Concrete Syntax Trees (CSTs). CSTs build on abstract syntax trees by preserving formatting and cosmetic parts of the code, allowing for changes to not disturb the overall program structure. Install via `pip install libcst`.
 
