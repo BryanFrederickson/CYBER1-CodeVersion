@@ -16,7 +16,7 @@ This project is meant to help signature-based intrusion detection by being able 
 
 Users will primarily interact with the Argos Translate Language Installer and Python Obfuscator.
 
-## Argos Translate Language Installer
+## 1. Argos Translate Language Installer
 This program is made to help install specific offline translation packages from Argos Translate for use in Variable and Function Obfuscation.
 
 #### Prerequisites
@@ -26,16 +26,38 @@ These instructions are written primarily for modern Windows. For installing prer
 3. [Argos Translate](https://github.com/argosopentech/argos-translate) - A library for offline language translation in Python. To install, simply run `pip install argostranslate` (more info in linked Repo).
 
 #### Installation and General Use
-1. Navigate to the [`Langs_Installer`](https://github.com/BryanFrederickson/CYBER1-CodeVersion/tree/76643a49d483dd935053f1e334928d436a46c7b2/Langs_Installer) folder on the Main Branch and download all of the files inside. Make sure when running any of the Python files that they are all in the same directory on your system.
-2. `ArgosTranslate_PreReqs_Installer.py`/`ArgosTranslate_PreReqs_Installer_support.py` - Due to the way the GUI's frontend (main file) and backend (`*_support.py`) work, you can run the program from either file. This program will let the user pick and choose from available language packages and automatically install them for the user.
-3. `ScrolledCheckedListBox.py` is a dependency and does nothing on its own, serving as a custom tkinter widget for making a scrollable checklist.
-4. `ArgosTranslate_Installed_Langs.py` - This file does not contain a GUI and the code must be manually configured (commenting out options) to run as desired. The python script can be used to uninstall all installed Argos Translate language packages as well as simply print all packages currently installed.
+Navigate to the [`Langs_Installer`](https://github.com/BryanFrederickson/CYBER1-CodeVersion/tree/76643a49d483dd935053f1e334928d436a46c7b2/Langs_Installer) folder on the Main Branch and download all of the files inside. Make sure when running any of the Python files that they are all in the same directory on your system.
+- `ArgosTranslate_PreReqs_Installer.py`/`ArgosTranslate_PreReqs_Installer_support.py` - Due to the way the GUI's frontend (main file) and backend (`*_support.py`) work, you can run the program from either file. This program will let the user pick and choose from available language packages and automatically install them for the user.
+- `ScrolledCheckedListBox_LangInstall.py` - This file is a dependency and does nothing on its own, serving as a custom tkinter widget for making a scrollable checklist.
+- `ArgosTranslate_Installed_Langs.py` - This file does not contain a GUI and the code must be manually configured (commenting out options) to run as desired. The python script can be used to uninstall all installed Argos Translate language packages as well as simply print all packages currently installed.
 
-## Python Obfuscator
-WIP, see ^ Argos Translate Language Installer for prerequisites. Also install LibCST for parsing via `pip install libcst`
+## 2. Python Obfuscator
+This program allows for automated generation of obfuscated semantic clones. A selected input Python source code file will be obfuscated, where variables/functions are translated to other languages and logic loops are changed, while still being functional.
+
+#### Prerequisites
+These instructions are written primarily for modern Windows. For installing prerqs on Windows, run Command Prompt as administrator.
+
+The following prerequisites are the same as above for the Argos Translate Language Installer.
+1. Python3 [3.9 or earlier] - Can be installed in multiple ways. The easiest way for Windows is via [installers](https://www.python.org/downloads/release/python-3913/). Check it's installed via `python --version` in terminal/command line and that the python installation was added to PATH environment variable.
+2. tkinter - The Python library used to render a GUI for our programs. The library is usually included with Python installs, but you can check via `pip install tk` on Windows or `sudo apt-get install python3-tk` on Ubuntu.
+3. [Argos Translate](https://github.com/argosopentech/argos-translate) - A library for offline language translation in Python. To install, simply run `pip install argostranslate` (more info in linked Repo).
+
+Additionally
+
+4. [LibCST](https://github.com/Instagram/LibCST) - A library for converting Python source code to and from Concrete Syntax Trees (CSTs). CSTs build on abstract syntax trees by preserving formatting and cosmetic parts of the code, allowing for changes to not disturb the overall program structure. Install via `pip install libcst`.
+
+#### Installation and General Use
+Navigate to the [Python_Obfuscator](https://github.com/BryanFrederickson/CYBER1-CodeVersion/tree/65599df46c11487d5cb75023a377683cd6733873/Python_Obfuscator) folder on the Main Branch and download all files inside. Make sure when running any of the Python files that they are all in the same directory on your system.
+- `Python_Obfuscator.py`/`Python_Obfuscator_support.py` - Due to the way the GUI's frontend (main file) and backend (`*_support.py`) work, you can run the program from either file. This program will automate the process for generating obfuscated clones, while allowing the user to tweak generation parameters.
+- `ScrolledCheckedListBox_PyObfsc.py` - This file is a dependency and does nothing on its own, serving as a custom tkinter widget for making a scrollable checklist.
+- `coding_abbreviations.py` - This file contains common abbreviations in variable or function names e.g. mem -> memory. This dictionary is used to convert variable substring abbreviations to a corresponding full term for accurate language translation. Common abbreviations list from the [`Abbreviations in code`](https://github.com/abbrcode/abbreviations-in-code) repository.
+
+#### Known Problems
+- Currently, `Logic Obfuscation` is disabled as a parameter (set to 0% probability during generation) due to issues with edge cases. Will be enabled once logic obfuscation code has been made robust enough to no longer crash.
 
 
 ## CSTRenamer
+An old implementation of variable and function renaming in Python source code, working with Gemini for synonym translation and backup word banks (colors and animals). **Unsupported.**
 #### Prerequisites
 These instructions are written for modern Windows. For installing prerqs on Windows, run Command Prompt as administrator.
 1. Python3 - Can be installed in multiple ways. The easiest way for Windows is via [installers](https://www.python.org/downloads/windows/). Check it's installed via `python --version` in powershell/command line and that the python installation was added to PATH environment variable.
