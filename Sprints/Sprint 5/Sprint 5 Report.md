@@ -44,7 +44,7 @@ Here are links to the issues that we completed in this sprint:
 
 
 ## Code Files for Review
-Please review the following code files, which were actively developed during this sprint, for quality:
+Please review the following code files, which were actively developed during this sprint, for quality (for more info on file functionality, see the [Main Branch READEME](https://github.com/BryanFrederickson/CYBER1-CodeVersion/blob/d441899c093c13e51d996bdf9c3109f6f130bf16/README.md)):
 ### Argos Translate Language Installer
  * [ArgosTranslate_Installed_Langs.py](https://github.com/BryanFrederickson/CYBER1-CodeVersion/blob/main/Langs_Installer/ArgosTranslate_Installed_Langs.py)
  * [ArgosTranslate_PreReqs_Installer.py](https://github.com/BryanFrederickson/CYBER1-CodeVersion/blob/main/Langs_Installer/ArgosTranslate_PreReqs_Installer.py)
