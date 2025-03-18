@@ -1,6 +1,6 @@
 # Sprint 5 Report (2/11/25 - 3/17/2025)
 
-Sprint 5 Demo Video WIP
+[Sprint 5 Demo Video](https://www.youtube.com/watch?v=H363BK4t65Y)
 
 ## What's New (User Facing)
 * [Argos Translate Language Installer](https://github.com/BryanFrederickson/CYBER1-CodeVersion?tab=readme-ov-file#argos-translate-language-installer) - to automate installation of specific languages in Argos Translate
