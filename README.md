@@ -110,6 +110,10 @@ Sprint 4 Deliverables:
 * [Sprint 4 Report](https://github.com/BryanFrederickson/CYBER1-CodeVersion/blob/main/Sprints/Sprint%204/Sprint%204%20Report.md)
 * [Sprint 4 Video](https://www.youtube.com/watch?v=KbjT55ulSEI)
 
+Sprint 5 Deliverables:
+* [Sprint 5 Report](https://github.com/BryanFrederickson/CYBER1-CodeVersion/blob/main/Sprints/Sprint%205/Sprint%205%20Report.md)
+* [Sprint 5 Video](https://www.youtube.com/watch?v=H363BK4t65Y)
+
 ## License
 
 [License](./LICENSE)
