@@ -30,6 +30,9 @@ Navigate to the [`Langs_Installer`](https://github.com/BryanFrederickson/CYBER1-
 - `ArgosTranslate_PreReqs_Installer.py`/`ArgosTranslate_PreReqs_Installer_support.py` - Due to the way the GUI's frontend (main file) and backend (`*_support.py`) work, you can run the program from either file. This program will let the user pick and choose from available language packages and automatically install them for the user.
 - `ScrolledCheckedListBox_LangInstall.py` - This file is a dependency and does nothing on its own, serving as a custom tkinter widget for making a scrollable checklist.
 - `ArgosTranslate_Installed_Langs.py` - This file does not contain a GUI and the code must be manually configured (commenting out options) to run as desired. The python script can be used to uninstall all installed Argos Translate language packages as well as simply print all packages currently installed.
+- 
+#### Known Problems
+- Currently, there is an issue installing Argos Translate on Python 3.10 or later due to a deprecated dependency, so Python 3.9 - 3.5 is required. Documentation will be updated when issue is fixed.
 
 ## 2. Python Obfuscator
 This program allows for automated generation of obfuscated semantic clones. A selected input Python source code file will be obfuscated, where variables/functions are translated to other languages and logic loops are changed, while still being functional.
@@ -54,6 +57,8 @@ Navigate to the [Python_Obfuscator](https://github.com/BryanFrederickson/CYBER1-
 
 #### Known Problems
 - Currently, `Logic Obfuscation` is disabled as a parameter (set to 0% probability during generation) due to issues with edge cases. Will be enabled once logic obfuscation code has been made robust enough to no longer crash.
+- Currently, there is an issue installing Argos Translate on Python 3.10 or later due to a deprecated dependency, so Python 3.9 - 3.5 is required. Documentation will be updated when issue is fixed.
+
 
 
 ## CSTRenamer
