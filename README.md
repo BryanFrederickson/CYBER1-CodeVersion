@@ -61,7 +61,7 @@ Navigate to the [Python_Obfuscator](https://github.com/BryanFrederickson/CYBER1-
 
 
 
-## CSTRenamer
+## CSTRenamer [Unsupported]
 An old implementation of variable and function renaming in Python source code, working with Gemini for synonym translation and backup word banks (colors and animals). **Unsupported.**
 #### Prerequisites
 These instructions are written for modern Windows. For installing prerqs on Windows, run Command Prompt as administrator.
