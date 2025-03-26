@@ -21,6 +21,8 @@ import random  # used for randomly choosing placeholder names
 import re  # for regular expressions
 import string
 from typing_extensions import final
+from keyword import iskeyword
+from unidecode import unidecode
 
 from coding_abbreviations import abbreviations
 
@@ -37,35 +39,35 @@ _debug = True  # False to eliminate debug printing from callback functions.
 def init_params():
     global params
     params = dict()
-    params['input_filename'] = ""
-    params['input_data'] = ""
-    params['output_dir'] = ""
-    params['original_cst'] = ""
+    params["input_filename"] = ""
+    params["input_data"] = ""
+    params["output_dir"] = ""
+    params["original_cst"] = ""
 
-    params['clones_min'] = 1
-    params['clones_max'] = 20
-    params['clones_count'] = ""
-    params['clones_count_valid'] = False
+    params["clones_min"] = 1
+    params["clones_max"] = 20
+    params["clones_count"] = ""
+    params["clones_count_valid"] = False
 
-    params['logic_min_percent'] = 0
-    params['logic_max_percent'] = 100
-    params['logic_percent'] = 0
-    params['logic_percent_valid'] = False
+    params["logic_min_percent"] = 0
+    params["logic_max_percent"] = 100
+    params["logic_percent"] = 0
+    params["logic_percent_valid"] = False
 
-    params['func_min_percent'] = 0
-    params['func_max_percent'] = 100
-    params['func_percent'] = 0
-    params['func_percent_valid'] = False
+    params["func_min_percent"] = 0
+    params["func_max_percent"] = 100
+    params["func_percent"] = 0
+    params["func_percent_valid"] = False
 
-    params['vars_min_percent'] = 0
-    params['vars_max_percent'] = 100
-    params['vars_percent'] = 0
-    params['vars_percent_valid'] = False
+    params["vars_min_percent"] = 0
+    params["vars_max_percent"] = 100
+    params["vars_percent"] = 0
+    params["vars_percent_valid"] = False
 
-    params['lang_names_installed'] = dict()
-    params['lang_packages'] = dict()
-    params['selected_inputlang'] = ""
-    params['selected_outputlangs'] = list()
+    params["lang_names_installed"] = dict()
+    params["lang_packages"] = dict()
+    params["selected_inputlang"] = ""
+    params["selected_outputlangs"] = list()
 
     global stats
     stats = dict()
@@ -81,6 +83,8 @@ def init_params():
 
     stats["total_logic"] = 0
     stats["changed_logic"] = 0
+
+    stats["curr_translate"] = 0  # holds current clone's translation model
 
 
 def main(*args):
@@ -156,13 +160,24 @@ def update_LogicRatio(curr: int, total: int):
 def generate_clones():
     _w1.F_generate.tkraise()
 
-    for clone_num in range(params['clones_count']):
+    for clone_num in range(params["clones_count"]):
         clear_logCurr()
         print_to_logAll(f"Generating clone #{clone_num+1}...")
         stats["renamed_vars"] = dict()
         stats["func_name_pairs"] = dict()
-        stats["current_outlang"] = random.choice(params['selected_outputlangs'])
+        stats["current_outlang"] = random.choice(params["selected_outputlangs"])
         _w1.L_currLang.configure(text=stats["current_outlang"])
+
+        
+        # current translation model equals Input language -> Output Language
+        # e.g. model = (English->en->en_package).get_translation(French->fr->fr_package)
+        stats["curr_translate"] = params["lang_packages"][
+            params["lang_names_installed"][params["selected_inputlang"]]
+        ].get_translation(
+            params["lang_packages"][
+                params["lang_names_installed"][stats["current_outlang"]]
+            ]
+        )
 
         stats["total_vars"] = 0
         stats["changed_vars"] = 0
@@ -178,20 +193,20 @@ def generate_clones():
 
         ## Provides extra data for every node in the tree ##
         global wrapped_module
-        wrapped_module = MetadataWrapper(params['original_cst'])
+        wrapped_module = MetadataWrapper(params["original_cst"])
 
-        if params['logic_percent'] != 0:
+        if params["logic_percent"] != 0:
             ## Traverse tree with transformer subclass ##
             wrapped_module = wrapped_module.visit(LogicRenamer())
             print("Logic obfuscated...")
             print_to_logCurr("Logic obfuscated...")
 
-        if params['vars_percent'] != 0:
+        if params["vars_percent"] != 0:
             wrapped_module = wrapped_module.visit(VarRename())
             print("Variables renamed...")
             print_to_logCurr("Variables renamed...")
 
-        if params['func_percent'] != 0:
+        if params["func_percent"] != 0:
             wrapped_module = wrapped_module.visit(FuncRename())
             print("Functions renamed...")
             print_to_logCurr("Functions renamed...")
@@ -202,8 +217,8 @@ def generate_clones():
 
         modified_code = wrapped_module.code
         current_filename = str(f"{params['input_filename']}_Obf_{clone_num+1}.py")
-        filepath = os.path.join(params['output_dir'], current_filename)
-        with open(filepath, "w") as output_file:
+        filepath = os.path.join(params["output_dir"], current_filename)
+        with open(filepath, mode="w", encoding="utf-8") as output_file:
             output_file.write(modified_code)
         output_file.close()
         print_to_logAll(f"'{current_filename}' generated.\n")
@@ -225,26 +240,26 @@ def init_langs():
         )
         _w1.E_transFuncProb.configure(state="disabled")
         _w1.E_transVarProb.configure(state="disabled")
-        params['func_percent'] = 0
-        params['func_percent_valid'] = True
+        params["func_percent"] = 0
+        params["func_percent_valid"] = True
 
-        params['vars_percent'] = 0
-        params['vars_percent_valid'] = True
+        params["vars_percent"] = 0
+        params["vars_percent_valid"] = True
         _w1.CB_inLang.configure(state="disabled")
     else:
         for lang in installed_languages:
-            params['lang_packages'][lang.code] = lang
-            params['lang_names_installed'][lang.name] = lang.code
+            params["lang_packages"][lang.code] = lang
+            params["lang_names_installed"][lang.name] = lang.code
 
-        params['lang_names_installed'] = dict(
-            sorted(params['lang_names_installed'].items())
+        params["lang_names_installed"] = dict(
+            sorted(params["lang_names_installed"].items())
         )
-        _w1.CB_inLang.configure(values=list(params['lang_names_installed'].keys()))
+        _w1.CB_inLang.configure(values=list(params["lang_names_installed"].keys()))
 
 
 def init_scrolledCheckList():
     _w1.C_transOutLangSelect.cback = on_scl_click
-    _w1.C_transOutLangSelect.load(list(params['lang_names_installed'].keys()))
+    _w1.C_transOutLangSelect.load(list(params["lang_names_installed"].keys()))
 
 
 def on_scl_click(s=None):
@@ -276,20 +291,20 @@ def bind_entries():
             "clones_count_valid",
         ),
     )
-    
+
     #
     #
     # DISABLED LOGIC
     #
     #
     _w1.L_logicObfscProb.configure(text="Probability: [Disabled]")
-    _w1.E_logicObfscProb.delete(0,END)
-    _w1.E_logicObfscProb.insert(0,'0')
+    _w1.E_logicObfscProb.delete(0, END)
+    _w1.E_logicObfscProb.insert(0, "0")
     _w1.E_logicObfscProb.configure(state="disabled")
-    params["logic_percent"]=0
-    params['logic_percent_valid']=True
+    params["logic_percent"] = 0
+    params["logic_percent_valid"] = True
 
-    '''
+    """
     _w1.L_logicObfscProbRange.configure(
         text=f"[{params['logic_min_percent']}-{params['logic_max_percent']}]"
     )
@@ -303,7 +318,7 @@ def bind_entries():
             "logic_percent_valid",
         ),
     )
-    '''
+    """
 
     _w1.L_transFuncRange.configure(
         text=f"[{params['func_min_percent']}-{params['func_max_percent']}]"
@@ -352,8 +367,8 @@ def is_int_inrange(curr_entry, min_val, max_val, curr_val, param_valid):
 
 
 def upload_file(event=None):
-    params['input_filename'] = ""
-    params['input_data'] = ""
+    params["input_filename"] = ""
+    params["input_data"] = ""
     disable_genButton()
     inputpath = filedialog.askopenfilename(
         # initialdir=os.getcwd(),
@@ -363,9 +378,9 @@ def upload_file(event=None):
     )
     if inputpath:
         try:
-            with open(inputpath, "r") as input_file:
-                params['input_filename'] = os.path.basename(inputpath)
-                params['input_data'] = input_file.read()
+            with open(inputpath, mode="r", encoding="utf-8") as input_file:
+                params["input_filename"] = os.path.basename(inputpath)
+                params["input_data"] = input_file.read()
                 _w1.E_inputFilePath.configure(state="normal")
                 _w1.E_inputFilePath.delete(0, tk.END)
                 _w1.E_inputFilePath.insert(tk.END, inputpath)
@@ -385,11 +400,11 @@ def upload_file(event=None):
 
 
 def select_outDir(event=None):
-    params['output_dir'] = ""
+    params["output_dir"] = ""
     disable_genButton()
     out_dir = filedialog.askdirectory(initialdir=os.path.dirname(__file__))
     if out_dir:
-        params['output_dir'] = out_dir
+        params["output_dir"] = out_dir
         _w1.E_outputDirectory.configure(state="normal")
         _w1.E_outputDirectory.delete(0, tk.END)
         _w1.E_outputDirectory.insert(tk.END, out_dir)
@@ -416,20 +431,20 @@ def validate_params():
 
     # check input params
     if not _w1.L_inputError["text"]:
-        if not params['input_data']:
+        if not params["input_data"]:
             _w1.L_inputError.configure(text="Input file empty.")
             all_params_valid = False
             _w1.LF_inputFile.configure(foreground="#d70005")
         else:
             # see if file is syntactically correct
             try:
-                ast.parse(params['input_data'])
+                ast.parse(params["input_data"])
                 _w1.L_valError.configure(font="-family {Segoe UI} -size 9 -weight bold")
                 _w1.L_valError.configure(foreground="#000000")
                 _w1.L_valError.configure(
                     text=f"{params['input_filename']} is syntactically valid."
                 )
-                params['original_cst'] = cst.parse_module(params['input_data'])
+                params["original_cst"] = cst.parse_module(params["input_data"])
                 _w1.LF_inputFile.configure(foreground="#000000")
             except SyntaxError as error:
                 all_params_valid = False
@@ -439,7 +454,7 @@ def validate_params():
                     text=f"Syntax error in {params['input_filename']}: {error}"
                 )
                 _w1.LF_inputFile.configure(foreground="#d70005")
-    elif not params['input_filename']:
+    elif not params["input_filename"]:
         _w1.LF_inputFile.configure(foreground="#d70005")
         all_params_valid = False
     else:
@@ -448,11 +463,11 @@ def validate_params():
 
     # check output params
     if not _w1.L_outputError["text"]:
-        if not params['output_dir']:
+        if not params["output_dir"]:
             _w1.LF_outputFiles.configure(foreground="#d70005")
             _w1.L_outputError.configure(text="No directory selected.")
             all_params_valid = False
-        elif not params['clones_count_valid']:
+        elif not params["clones_count_valid"]:
             _w1.L_outputCount.configure(foreground="#d70005")
             _w1.L_outputError.configure(text="Invalid clone count.")
             all_params_valid = False
@@ -460,7 +475,7 @@ def validate_params():
             _w1.L_outputCount.configure(foreground="#000000")
             _w1.LF_outputFiles.configure(foreground="#000000")
             _w1.L_outputError.configure(text="")
-    elif not params['output_dir']:
+    elif not params["output_dir"]:
         _w1.LF_outputFiles.configure(foreground="#d70005")
         all_params_valid = False
     else:
@@ -474,7 +489,7 @@ def validate_params():
     literally every other label frame works.
     _w1.LF_logicObfsc["foreground"]="#d70005" but it doesn't update
     """
-    if not params['logic_percent_valid']:
+    if not params["logic_percent_valid"]:
         _w1.LF_logicObfsc.configure(foreground="#d70005")
         # root.update() # doesn't work either
         # root.after(1)
@@ -487,13 +502,13 @@ def validate_params():
     # check translation params
     translation_error_full = ""
 
-    if not params['func_percent_valid']:
+    if not params["func_percent_valid"]:
         translation_error_full += "Invalid Function probability. "
         _w1.L_transFunc.configure(foreground="#d70005")
         all_params_valid = False
     else:
         _w1.L_transFunc.configure(foreground="#000000")
-    if not params['vars_percent_valid']:
+    if not params["vars_percent_valid"]:
         translation_error_full += "Invalid Variable probability. "
         _w1.L_transVar.configure(foreground="#d70005")
         all_params_valid = False
@@ -501,10 +516,10 @@ def validate_params():
         _w1.L_transVar.configure(foreground="#000000")
 
     valid_probs_butzero = (
-        params['func_percent_valid']
-        and params['vars_percent_valid']
-        and params['func_percent'] == 0
-        and params['vars_percent'] == 0
+        params["func_percent_valid"]
+        and params["vars_percent_valid"]
+        and params["func_percent"] == 0
+        and params["vars_percent"] == 0
     )
 
     # check translation percentages, because if 0% for both,
@@ -519,7 +534,7 @@ def validate_params():
             _w1.LF_transInLang.configure(foreground="#d70005")
             all_params_valid = False
         else:
-            params['selected_inputlang'] = inlang
+            params["selected_inputlang"] = inlang
             _w1.LF_transInLang.configure(foreground="#000000")
 
         # check output languages
@@ -528,12 +543,12 @@ def validate_params():
             translation_error_full += "No output languages. "
             _w1.LF_transOutLangs.configure(foreground="#d70005")
             all_params_valid = False
-        elif inlang and (params['selected_inputlang'] in outlangs):
+        elif inlang and (params["selected_inputlang"] in outlangs):
             translation_error_full += "Source language also in output languages. "
             _w1.LF_transOutLangs.configure(foreground="#d70005")
             all_params_valid = False
         else:
-            params['selected_outputlangs'] = outlangs.copy()
+            params["selected_outputlangs"] = outlangs.copy()
             _w1.LF_transOutLangs.configure(foreground="#000000")
 
     _w1.L_transError.configure(text=translation_error_full)
@@ -549,17 +564,14 @@ def validate_params():
         _w1.B_validate.configure(state="disabled")
 
 
-def translate_name(input: str, outlang: str) -> str:
+def translate_name(input: str, isvar: bool) -> str:
     separate_words = split_name(input)
     unabbrev_sepwords = swap_abbreviations(separate_words)
     spaced_string = "".join(unabbrev_sepwords)
-    translated_text = ""
-    translate = params['lang_packages'][
-        params['lang_names_installed'][params['selected_inputlang']]
-    ].get_translation(params['lang_packages'][params['lang_names_installed'][outlang]])
 
-    translated_text = translate.translate(spaced_string)
+    translated_text = stats["curr_translate"].translate(spaced_string)
     # output_var=''.join(filter(str.isidentifier, translated_text))
+    '''
     alphanumeric_chars = string.ascii_letters + "_"
     output_var = (
         re.sub(
@@ -569,6 +581,33 @@ def translate_name(input: str, outlang: str) -> str:
         )
     )[:40]
     return output_var
+    '''
+    nopunc=re.sub(r'[^\w\s]', '', translated_text)
+    concat_text=translated_text.replace(' ', '_')
+
+    output_name="testval_"
+    if (concat_text.isidentifier()):
+        if not (iskeyword(concat_text)):
+            output_name=concat_text
+        else:
+            if isvar:
+                output_name="concat_text_"+str(stats["changed_vars"])
+            else:
+                output_name="concat_text_"+str(stats["changed_funcs"])
+    else:
+        # attempt transliteration
+        transliterated=unidecode(concat_text)
+        transliterated=transliterated.replace(' ','_')
+        transliterated=re.sub(r'[^\w\s]', '', transliterated)
+        if (transliterated.isidentifier()):
+            output_name=transliterated
+        else:
+            if isvar:
+                output_name="invalidvar_"+str(stats["changed_vars"])
+            else:
+                output_name="invalidfunc_"+str(stats["changed_funcs"])
+    print_to_logCurr(f"Renamed {'variable' if isvar else 'function'} {input} -> {output_name}")
+    return output_name
 
 
 # splits given var/function name into individual words based on naming conventions
@@ -633,17 +672,16 @@ class VarRename(cst.CSTTransformer):
 
         ## Only rename the variable if Gemini has not come up with a synonym for it. Otherwise return the current synonym ##
         if original_varname not in stats["renamed_vars"]:
-            if random.random() < (float(params['vars_percent']) * 0.01):
-                new_name = translate_name(original_varname, stats["current_outlang"])
-                stats["renamed_vars"][original_varname] = new_name
-
-                stats["total_vars"] = stats["total_vars"] + 1
+            stats["total_vars"] = stats["total_vars"] + 1
+            if random.random() < (float(params["vars_percent"]) * 0.01):
                 stats["changed_vars"] = stats["changed_vars"] + 1
-                update_VarRatio(stats["changed_vars"], stats["total_vars"])
+                new_name = translate_name(original_varname, True)
+                stats["renamed_vars"][original_varname] = new_name
 
             else:
                 # keep unchanged, add to dict so that it doesn't run this every time an unchanged var is hit
                 stats["renamed_vars"][original_varname] = original_varname
+            update_VarRatio(stats["changed_vars"], stats["total_vars"])
         return stats["renamed_vars"][original_varname]
 
     #######################################################################################################
@@ -912,15 +950,12 @@ class FuncRename(cst.CSTTransformer):
         self, node: cst.FunctionDef, updated_node: cst.FunctionDef
     ) -> cst.FunctionDef:
         if updated_node.name.value not in stats["func_name_pairs"]:
-            if random.random() < (float(params['func_percent']) * 0.01):
-                new_name = translate_name(
-                    updated_node.name.value, stats["current_outlang"]
-                )
+            stats["total_funcs"] = stats["total_funcs"] + 1
+            if random.random() < (float(params["func_percent"]) * 0.01):
+                stats["changed_funcs"] = stats["changed_funcs"] + 1
+                new_name = translate_name(updated_node.name.value, False)
                 stats["func_name_pairs"].update({updated_node.name.value: new_name})
 
-                stats["total_funcs"] = stats["total_funcs"] + 1
-                stats["changed_funcs"] = stats["changed_funcs"] + 1
-                update_FuncRatio(stats["changed_funcs"], stats["total_funcs"])
             else:
                 stats["func_name_pairs"].update(
                     {updated_node.name.value: updated_node.name.value}
@@ -928,6 +963,7 @@ class FuncRename(cst.CSTTransformer):
         # the name node in function def is a child node, thus to change function name via the FunctionDef parent node, use with_deep_changes via:
         # (https://libcst.readthedocs.io/en/latest/nodes.html#libcst.CSTNode.with_deep_changes)
 
+        update_FuncRatio(stats["changed_funcs"], stats["total_funcs"])
         # print("Function def of \'"+updated_node.name.value+"\' has been renamed to \'"+stats["func_name_pairs"][updated_node.name.value]+"\'")
         return updated_node.with_deep_changes(
             updated_node.name, value=stats["func_name_pairs"][updated_node.name.value]
@@ -941,19 +977,17 @@ class FuncRename(cst.CSTTransformer):
         alias_node = updated_node.asname
         if alias_node:
             if alias_node.name.value not in stats["func_name_pairs"]:
-                if random.random() < (float(params['func_percent']) * 0.01):
-                    new_name = translate_name(
-                        alias_node.name.value, stats["current_outlang"]
-                    )
-                    stats["func_name_pairs"].update({alias_node.name.value: new_name})
-
-                    stats["total_funcs"] = stats["total_funcs"] + 1
+                stats["total_funcs"] = stats["total_funcs"] + 1
+                if random.random() < (float(params["func_percent"]) * 0.01):
                     stats["changed_funcs"] = stats["changed_funcs"] + 1
-                    update_FuncRatio(stats["changed_funcs"], stats["total_funcs"])
+                    new_name = translate_name(alias_node.name.value, False)
+                    stats["func_name_pairs"].update({alias_node.name.value: new_name})
                 else:
                     stats["func_name_pairs"].update(
                         {alias_node.name.value: alias_node.name.value}
                     )
+            update_FuncRatio(stats["changed_funcs"], stats["total_funcs"])
+
             # print("Import alias of \'"+alias_node.name.value+"\' has been renamed to \'"+stats["func_name_pairs"][alias_node.name.value]+"\'")
             return updated_node.with_deep_changes(
                 updated_node.asname.name,
@@ -1005,7 +1039,7 @@ class LogicRenamer(cst.CSTTransformer):
         self, original_node: cst.While, updated_node: cst.While
     ) -> cst.For:  # Handles logic swapping for While -> For looping #
 
-        if random.random() < (float(params['logic_percent']) * 0.01):
+        if random.random() < (float(params["logic_percent"]) * 0.01):
 
             if isinstance(
                 updated_node.test, cst.Comparison
@@ -1029,7 +1063,7 @@ class LogicRenamer(cst.CSTTransformer):
 
     def leave_If(self, original_node: cst.If, updated_node: cst.If) -> cst.CSTNode:
 
-        if random.random() < (float(params['logic_percent']) * 0.01):
+        if random.random() < (float(params["logic_percent"]) * 0.01):
 
             transformed_node = If_Handler(updated_node)
 
@@ -1041,7 +1075,7 @@ class LogicRenamer(cst.CSTTransformer):
 
     def leave_For(self, original_node: cst.For, updated_node: cst.For) -> cst.While:
 
-        if random.random() < (float(params['logic_percent']) * 0.01):
+        if random.random() < (float(params["logic_percent"]) * 0.01):
 
             transformed_node = For_Handler(updated_node)
 
