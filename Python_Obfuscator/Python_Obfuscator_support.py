@@ -591,9 +591,9 @@ def translate_name(input: str, isvar: bool) -> str:
             output_name=concat_text
         else:
             if isvar:
-                output_name="concat_text_"+str(stats["changed_vars"])
+                output_name=concat_text+"_"+str(stats["changed_vars"])
             else:
-                output_name="concat_text_"+str(stats["changed_funcs"])
+                output_name=concat_text+"_"+str(stats["changed_funcs"])
     else:
         # attempt transliteration
         transliterated=unidecode(concat_text)
