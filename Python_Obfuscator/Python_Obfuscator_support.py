@@ -33,6 +33,20 @@ import Python_Obfuscator
 
 _debug = True  # False to eliminate debug printing from callback functions.
 
+class BaseTransformer(cst.CSTTransformer):
+
+    def __init__(self, log_file):
+
+        super().__init__()
+        self.log_file = log_file
+
+    def log_change(self, message):
+
+        print(self.log_file)
+  
+        with open(self.log_file, "a") as log_file:
+            log_file.write(message + "\n")
+
 
 def init_params():
     global params
@@ -164,6 +178,16 @@ def generate_clones():
         stats["current_outlang"] = random.choice(params['selected_outputlangs'])
         _w1.L_currLang.configure(text=stats["current_outlang"])
 
+        ## Creation of log file for specific N semantic clone ##
+
+        log_file_path = os.path.join(params['output_dir'], f"{params['input_filename']}_Obf_{clone_num+1}.log")
+
+        with open(log_file_path, "w") as log_file:
+            log_file.write(f"Log for Clone #{clone_num+1}\n")
+            log_file.write("=" * 50 + "\n")
+        
+        #########################################################
+
         stats["total_vars"] = 0
         stats["changed_vars"] = 0
         update_VarRatio(0, 0)
@@ -182,21 +206,21 @@ def generate_clones():
 
         if params['logic_percent'] != 0:
             ## Traverse tree with transformer subclass ##
-            wrapped_module = wrapped_module.visit(LogicRenamer())
+            wrapped_module = wrapped_module.visit(LogicRenamer(log_file_path))
             print("Logic obfuscated...")
             print_to_logCurr("Logic obfuscated...")
 
         if params['vars_percent'] != 0:
-            wrapped_module = wrapped_module.visit(VarRename())
+            wrapped_module = wrapped_module.visit(VarRename(log_file_path))
             print("Variables renamed...")
             print_to_logCurr("Variables renamed...")
 
         if params['func_percent'] != 0:
-            wrapped_module = wrapped_module.visit(FuncRename())
+            wrapped_module = wrapped_module.visit(FuncRename(log_file_path))
             print("Functions renamed...")
             print_to_logCurr("Functions renamed...")
 
-            wrapped_module = wrapped_module.visit(CallRename())
+            wrapped_module = wrapped_module.visit(CallRename(log_file_path))
             print("Function calls renamed...")
             print_to_logCurr("Function calls renamed...")
 
@@ -282,14 +306,14 @@ def bind_entries():
     # DISABLED LOGIC
     #
     #
-    _w1.L_logicObfscProb.configure(text="Probability: [Disabled]")
-    _w1.E_logicObfscProb.delete(0,END)
-    _w1.E_logicObfscProb.insert(0,'0')
-    _w1.E_logicObfscProb.configure(state="disabled")
-    params["logic_percent"]=0
-    params['logic_percent_valid']=True
+    # _w1.L_logicObfscProb.configure(text="Probability: [Disabled]")
+    # _w1.E_logicObfscProb.delete(0,END)
+    # _w1.E_logicObfscProb.insert(0,'0')
+    # _w1.E_logicObfscProb.configure(state="disabled")
+    # params["logic_percent"]=0
+    # params['logic_percent_valid']=True
 
-    '''
+    
     _w1.L_logicObfscProbRange.configure(
         text=f"[{params['logic_min_percent']}-{params['logic_max_percent']}]"
     )
@@ -303,7 +327,7 @@ def bind_entries():
             "logic_percent_valid",
         ),
     )
-    '''
+    
 
     _w1.L_transFuncRange.configure(
         text=f"[{params['func_min_percent']}-{params['func_max_percent']}]"
@@ -622,14 +646,19 @@ def swap_abbreviations(input: list) -> list:
 
 
 ## Creation of subclass derived from CSTTransformer which allows modified traversal attributes ##
-class VarRename(cst.CSTTransformer):
+class VarRename(BaseTransformer):
 
     ## Allows access to parent node metadata ##
     METADATA_DEPENDENCIES = (ParentNodeProvider,)
 
+    def __init__(self, log_file):
+        super().__init__(log_file)
+
     ############ Function to generate a new synonym for the existing variable using gemini API ############
 
     def get_synonym(self, original_varname):
+
+     try:
 
         ## Only rename the variable if Gemini has not come up with a synonym for it. Otherwise return the current synonym ##
         if original_varname not in stats["renamed_vars"]:
@@ -641,10 +670,16 @@ class VarRename(cst.CSTTransformer):
                 stats["changed_vars"] = stats["changed_vars"] + 1
                 update_VarRatio(stats["changed_vars"], stats["total_vars"])
 
+                self.log_change(f"Renamed variable: {original_varname} -> {new_name}")
+
             else:
                 # keep unchanged, add to dict so that it doesn't run this every time an unchanged var is hit
                 stats["renamed_vars"][original_varname] = original_varname
-        return stats["renamed_vars"][original_varname]
+
+     except Exception as e:
+
+        self.log_change(f"Error in get_synonym() <VARRENAME>: {str(e)}")
+        return original_varname 
 
     #######################################################################################################
 
@@ -655,6 +690,8 @@ class VarRename(cst.CSTTransformer):
     def leave_Param(
         self, original_node: cst.Param, updated_node: cst.Param
     ) -> cst.Param:
+        
+     try:
 
         if isinstance(updated_node.name, cst.Name):
 
@@ -664,6 +701,11 @@ class VarRename(cst.CSTTransformer):
             )
 
         return updated_node
+     
+     except Exception as e:
+
+        self.log_change(f"Error in leave_Param() <VARRENAME>: {str(e)}") 
+        return original_node 
 
     #######################################################################################################
 
@@ -673,6 +715,8 @@ class VarRename(cst.CSTTransformer):
     # (Ex: for variable in variable2:)
 
     def leave_For(self, original_node: cst.For, updated_node: cst.For) -> cst.For:
+    
+     try:
 
         if isinstance(updated_node.target, cst.Name):
 
@@ -709,6 +753,11 @@ class VarRename(cst.CSTTransformer):
             )
 
         return updated_node
+     
+     except Exception as e:
+
+        self.log_change(f"Error in leave_For() <VARRENAME>: {str(e)}") 
+        return original_node 
 
     #######################################################################################################
 
@@ -719,6 +768,8 @@ class VarRename(cst.CSTTransformer):
     def leave_AssignTarget(
         self, original_node: cst.AssignTarget, updated_node: cst.AssignTarget
     ) -> cst.AssignTarget:
+        
+     try:
 
         if isinstance(updated_node.target, cst.Name):
 
@@ -728,6 +779,11 @@ class VarRename(cst.CSTTransformer):
             )
 
         return updated_node
+     
+     except Exception as e:
+
+       self.log_change(f"Error in leave_AssignTarget() <VARRENAME>: {str(e)}") 
+       return original_node 
 
     #######################################################################################################
 
@@ -738,6 +794,8 @@ class VarRename(cst.CSTTransformer):
     def leave_Attribute(
         self, original_node: cst.AssignTarget, updated_node: cst.AssignTarget
     ) -> cst.AssignTarget:
+        
+     try:
 
         if (
             isinstance(updated_node.value, cst.Name)
@@ -759,6 +817,11 @@ class VarRename(cst.CSTTransformer):
             )
 
         return updated_node
+     
+     except Exception as e:
+
+        self.log_change(f"Error in leave_Attribute() <VARRENAME>: {str(e)}") 
+        return original_node 
 
     #######################################################################################################
 
@@ -768,6 +831,8 @@ class VarRename(cst.CSTTransformer):
 
     def leave_Arg(self, original_node: cst.Arg, updated_node: cst.Arg) -> cst.Arg:
 
+     try:
+
         if isinstance(updated_node.value, cst.Name):
 
             new_varname = self.get_synonym(updated_node.value.value)
@@ -776,6 +841,11 @@ class VarRename(cst.CSTTransformer):
             )
 
         return updated_node
+     
+     except Exception as e:
+
+        self.log_change(f"Error in leave_Arg() <VARRENAME>: {str(e)}") 
+        return original_node 
 
     #######################################################################################################
 
@@ -800,6 +870,8 @@ class VarRename(cst.CSTTransformer):
     def leave_BinaryOperation(
         self, original_node: cst.BinaryOperation, updated_node: cst.BinaryOperation
     ) -> cst.BinaryOperation:
+        
+     try:
 
         if isinstance(updated_node.left, cst.Name):
 
@@ -816,6 +888,11 @@ class VarRename(cst.CSTTransformer):
             )
 
         return updated_node
+     
+     except Exception as e:
+
+        self.log_change(f"Error in leave_BinaryOperation() <VARRENAME>: {str(e)}") 
+        return original_node 
 
     #######################################################################################################
 
@@ -842,6 +919,8 @@ class VarRename(cst.CSTTransformer):
     def leave_Comparison(
         self, original_node: cst.Comparison, updated_node: cst.Comparison
     ) -> cst.Comparison:
+        
+     try:
 
         if isinstance(updated_node.left, cst.Name):
 
@@ -851,6 +930,11 @@ class VarRename(cst.CSTTransformer):
             )
 
         return updated_node
+     
+     except Exception as e:
+
+        self.log_change(f"Error in leave_Comparison() <VARRENAME>: {str(e)}") 
+        return original_node 
 
     #######################################################################################################
 
@@ -861,6 +945,8 @@ class VarRename(cst.CSTTransformer):
     def leave_Return(
         self, original_node: cst.Return, updated_node: cst.Return
     ) -> cst.Return:
+        
+     try:
 
         if isinstance(updated_node.value, cst.Name):
 
@@ -870,12 +956,19 @@ class VarRename(cst.CSTTransformer):
             )
 
         return updated_node
+     
+     except Exception as e:
+
+        self.log_change(f"Error in leave_Return() <VARRENAME>: {str(e)}") 
+        return original_node 
 
     #######################################################################################################
 
     def leave_FormattedString(
         self, original_node: cst.FormattedString, updated_node: cst.FormattedString
     ) -> cst.FormattedString:
+        
+     try:
 
         new_parts = []
 
@@ -899,18 +992,29 @@ class VarRename(cst.CSTTransformer):
                 new_parts.append(part)
 
         return updated_node.with_changes(parts=new_parts)
+     
+     except Exception as e:
+
+        self.log_change(f"Error in leave_FormattedString() <VARRENAME>: {str(e)}") 
+        return original_node 
 
     #######################################################################################################
 
 
 # rename all function defs or aliases (only rename custom functions, not things like print() or math.log)
-class FuncRename(cst.CSTTransformer):
+class FuncRename(BaseTransformer):
+
+    def __init__(self, log_file):
+        super().__init__(log_file)
 
     # rename function names in a "def funcname: " node
     # FunctionDef node docs: (https://libcst.readthedocs.io/_/downloads/en/latest/pdf/#page=73&zoom=auto,-205,215)
     def leave_FunctionDef(
         self, node: cst.FunctionDef, updated_node: cst.FunctionDef
     ) -> cst.FunctionDef:
+        
+     try:
+
         if updated_node.name.value not in stats["func_name_pairs"]:
             if random.random() < (float(params['func_percent']) * 0.01):
                 new_name = translate_name(
@@ -921,6 +1025,8 @@ class FuncRename(cst.CSTTransformer):
                 stats["total_funcs"] = stats["total_funcs"] + 1
                 stats["changed_funcs"] = stats["changed_funcs"] + 1
                 update_FuncRatio(stats["changed_funcs"], stats["total_funcs"])
+
+                self.log_change(f"Renamed function: {updated_node.name.value} -> {new_name}")
             else:
                 stats["func_name_pairs"].update(
                     {updated_node.name.value: updated_node.name.value}
@@ -932,12 +1038,21 @@ class FuncRename(cst.CSTTransformer):
         return updated_node.with_deep_changes(
             updated_node.name, value=stats["func_name_pairs"][updated_node.name.value]
         )
+     
+     except Exception as e:
+
+        self.log_change(f"Error in leave_FunctionDef() <FUNCRENAME>: {str(e)}") 
+        return node 
+     
 
     # rename function names in a "import x as y" node
     # ImportAlias node docs: (https://libcst.readthedocs.io/_/downloads/en/latest/pdf/#page=78&zoom=auto,-205,314)
     def leave_ImportAlias(
         self, node: cst.ImportAlias, updated_node: cst.ImportAlias
     ) -> cst.ImportAlias:
+        
+     try:
+
         alias_node = updated_node.asname
         if alias_node:
             if alias_node.name.value not in stats["func_name_pairs"]:
@@ -960,18 +1075,30 @@ class FuncRename(cst.CSTTransformer):
                 value=stats["func_name_pairs"][alias_node.name.value],
             )
         return updated_node
+     
+     except Exception as e:
+
+        self.log_change(f"Error in leave_ImportAlias() <FUNCRENAME>: {str(e)}") 
+        return node 
 
 
 # kept separate from FuncRename to do two-pass and prevent renaming predefined functions like print()
-class CallRename(cst.CSTTransformer):
+class CallRename(BaseTransformer):
+
+    def __init__(self, log_file):
+        super().__init__(log_file)
 
     # rename function names in a function call node
     # Call node docs: (https://libcst.readthedocs.io/_/downloads/en/latest/pdf/#page=53&zoom=auto,-205,721)
     def leave_Call(self, node: cst.Call, updated_node: cst.Call) -> cst.Call:
 
+     try:
+
         # Name node: (https://libcst.readthedocs.io/_/downloads/en/latest/pdf/#page=48&zoom=auto,-205,344)
         if (type(updated_node.func)) is cst._nodes.expression.Name:
             if (updated_node.func.value) in stats["func_name_pairs"]:
+
+                self.log_change(f"Renamed function call: {updated_node.func.value} -> {stats['func_name_pairs'][updated_node.func.value]}")
 
                 # print("Function call of \'"+updated_node.func.value+"\' has been renamed to \'"+stats["func_name_pairs"][updated_node.func.value]+"\'")
                 return updated_node.with_deep_changes(
@@ -992,18 +1119,28 @@ class CallRename(cst.CSTTransformer):
                     value=stats["func_name_pairs"][updated_node.func.value.value],
                 )
         return updated_node
+     
+     except Exception as e:
+
+        self.log_change(f"Error in leave_Call() <CALLRENAME>: {str(e)}") 
+        return node 
 
 
 # Logic renamer subclass definition #
-class LogicRenamer(cst.CSTTransformer):
+class LogicRenamer(BaseTransformer):
 
     METADATA_DEPENDENCIES = (
         ParentNodeProvider,
     )  # Allow access to parent node attributes # #
 
+    def __init__(self, log_file):
+        super().__init__(log_file)
+
     def leave_While(
         self, original_node: cst.While, updated_node: cst.While
     ) -> cst.For:  # Handles logic swapping for While -> For looping #
+        
+     try:
 
         if random.random() < (float(params['logic_percent']) * 0.01):
 
@@ -1014,11 +1151,13 @@ class LogicRenamer(cst.CSTTransformer):
                 if len(updated_node.test.comparisons) == 1 and isinstance(
                     updated_node.test.comparisons[0].operator, cst.LessThan
                 ):  # Handles < logical comparison #
+                    self.log_change("Converted While loop with '<' into For loop")
                     return LessThan_Handler(updated_node)
 
                 if len(updated_node.test.comparisons) == 1 and isinstance(
                     updated_node.test.comparisons[0].operator, cst.GreaterThan
                 ):  # Handles > logical comparison #
+                    self.log_change("Converted While loop with '>' into For loop")
                     return GreaterThan_Handler(updated_node)
 
                 return updated_node
@@ -1026,34 +1165,57 @@ class LogicRenamer(cst.CSTTransformer):
         else:
 
             return updated_node
+        
+     except Exception as e:
+
+        self.log_change(f"Error in leave_While() <LOGICRENAME>: {str(e)}") 
+        return original_node 
 
     def leave_If(self, original_node: cst.If, updated_node: cst.If) -> cst.CSTNode:
+
+     try:
 
         if random.random() < (float(params['logic_percent']) * 0.01):
 
             transformed_node = If_Handler(updated_node)
+            self.log_change("Refactored If-Statement into a function call")
 
             return transformed_node
 
         else:
 
             return updated_node
+        
+     except Exception as e:
+
+        self.log_change(f"Error in leave_If() <LOGICRENAME>: {str(e)}") 
+        return original_node 
 
     def leave_For(self, original_node: cst.For, updated_node: cst.For) -> cst.While:
+
+     try:
 
         if random.random() < (float(params['logic_percent']) * 0.01):
 
             transformed_node = For_Handler(updated_node)
+            self.log_change("Converted For-loop into While-loop")
 
             return transformed_node
 
         else:
 
             return updated_node
+        
+     except Exception as e:
+
+        self.log_change(f"Error in leave_For() <LOGICRENAME>: {str(e)}") 
+        return original_node 
 
 
 # Logic for swapping Less Than symbols in While loops #
-def LessThan_Handler(updated_node):
+def LessThan_Handler(self, updated_node):
+
+ try:
 
     if isinstance(updated_node.test.left, cst.Name):
 
@@ -1076,10 +1238,17 @@ def LessThan_Handler(updated_node):
             body=updated_node.body,
             orelse=updated_node.orelse,
         )
+    
+ except Exception as e:
+
+    self.log_change(f"Error in LessThan_Handler() <LOGICRENAME>: {str(e)}") 
+    return updated_node 
 
 
 # Logic for swapping Greater Than symbols in While loops #
-def GreaterThan_Handler(updated_node):
+def GreaterThan_Handler(self, updated_node):
+
+ try:
 
     if isinstance(updated_node.test.left, cst.Name):
 
@@ -1109,10 +1278,17 @@ def GreaterThan_Handler(updated_node):
             body=updated_node.body,
             orelse=updated_node.orelse,
         )
+    
+ except Exception as e:
+
+    self.log_change(f"Error in GreaterThan_Handler() <LOGICRENAME>: {str(e)}") 
+    return updated_node 
 
 
 # Logic for swapping if statements with function def and call #
-def If_Handler(updated_node):
+def If_Handler(self, updated_node):
+
+ try:
 
     func_name = "function"  # Defines the name of the function which calls original if statement #
 
@@ -1138,10 +1314,18 @@ def If_Handler(updated_node):
 
     # Returns multiple nodes which consist of both a function def and a function call #
     return cst.FlattenSentinel([func_def, func_call])
+ 
+ except Exception as e:
+
+    self.log_change(f"Error in If_Handler() <LOGICRENAME>: {str(e)}") 
+    return updated_node 
+ 
 
 
 # Logic for swapping For loops to While loops encountered while traversing CST #
-def For_Handler(updated_node):
+def For_Handler(self, updated_node):
+
+ try:
 
     loop_var = updated_node.target  # Variable within For loop #
 
@@ -1195,6 +1379,11 @@ def For_Handler(updated_node):
     update_LogicRatio(stats["changed_logic"], stats["total_logic"])
 
     return cst.FlattenSentinel([while_loop])
+ 
+ except Exception as e:
+
+    self.log_change(f"Error in For_Handler() <LOGICRENAME>: {str(e)}") 
+    return updated_node 
 
 
 if __name__ == "__main__":
