@@ -403,7 +403,7 @@ class Toplevel1:
 
         self.L_logicObfscProb = tk.Label(self.LF_logicObfsc)
         self.L_logicObfscProb.place(
-            relx=0.067, rely=0.296, height=13, width=113, bordermode="ignore"
+            relx=0.067, rely=0.296, height=13, width=125, bordermode="ignore"
         )
         self.L_logicObfscProb.configure(activebackground="#d9d9d9")
         self.L_logicObfscProb.configure(activeforeground="black")

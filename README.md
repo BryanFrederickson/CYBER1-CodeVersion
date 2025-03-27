@@ -30,6 +30,9 @@ Navigate to the [`Langs_Installer`](https://github.com/BryanFrederickson/CYBER1-
 - `ArgosTranslate_PreReqs_Installer.py`/`ArgosTranslate_PreReqs_Installer_support.py` - Due to the way the GUI's frontend (main file) and backend (`*_support.py`) work, you can run the program from either file. This program will let the user pick and choose from available language packages and automatically install them for the user.
 - `ScrolledCheckedListBox_LangInstall.py` - This file is a dependency and does nothing on its own, serving as a custom tkinter widget for making a scrollable checklist.
 - `ArgosTranslate_Installed_Langs.py` - This file does not contain a GUI and the code must be manually configured (commenting out options) to run as desired. The python script can be used to uninstall all installed Argos Translate language packages as well as simply print all packages currently installed.
+- 
+#### Known Problems
+- Currently, there is an issue installing Argos Translate on Python 3.10 or later due to a deprecated dependency, so Python 3.9 - 3.5 is required. Documentation will be updated when issue is fixed.
 
 ## 2. Python Obfuscator
 This program allows for automated generation of obfuscated semantic clones. A selected input Python source code file will be obfuscated, where variables/functions are translated to other languages and logic loops are changed, while still being functional.
@@ -45,6 +48,7 @@ The following prerequisites are the same as above for the Argos Translate Langua
 Additionally required:
 
 4. [LibCST](https://github.com/Instagram/LibCST) - A library for converting Python source code to and from Concrete Syntax Trees (CSTs). CSTs build on abstract syntax trees by preserving formatting and cosmetic parts of the code, allowing for changes to not disturb the overall program structure. Install via `pip install libcst`.
+5. [Unidecode](https://pypi.org/project/Unidecode/) - Used for transliteration, taking Unicode strings that contain invalid chars for [identifiers](https://docs.python.org/3/reference/lexical_analysis.html#identifiers) and replaces them with their English character equivalent (e.g. "你好" becomes "Ni Hao", "ہیلو!" becomes "hylw!"). Install via `pip install Unidecode`.
 
 #### Installation and General Use
 Navigate to the [Python_Obfuscator](https://github.com/BryanFrederickson/CYBER1-CodeVersion/tree/65599df46c11487d5cb75023a377683cd6733873/Python_Obfuscator) folder on the Main Branch and download all files inside. Make sure when running any of the Python files that they are all in the same directory on your system.
@@ -54,9 +58,11 @@ Navigate to the [Python_Obfuscator](https://github.com/BryanFrederickson/CYBER1-
 
 #### Known Problems
 - Currently, `Logic Obfuscation` is disabled as a parameter (set to 0% probability during generation) due to issues with edge cases. Will be enabled once logic obfuscation code has been made robust enough to no longer crash.
+- Currently, there is an issue installing Argos Translate on Python 3.10 or later due to a deprecated dependency, so Python 3.9 - 3.5 is required. Documentation will be updated when issue is fixed.
 
 
-## CSTRenamer
+
+## CSTRenamer [Unsupported]
 An old implementation of variable and function renaming in Python source code, working with Gemini for synonym translation and backup word banks (colors and animals). **Unsupported.**
 #### Prerequisites
 These instructions are written for modern Windows. For installing prerqs on Windows, run Command Prompt as administrator.
@@ -104,6 +110,10 @@ End of Semester 1 Documentation:
 Sprint 4 Deliverables:
 * [Sprint 4 Report](https://github.com/BryanFrederickson/CYBER1-CodeVersion/blob/main/Sprints/Sprint%204/Sprint%204%20Report.md)
 * [Sprint 4 Video](https://www.youtube.com/watch?v=KbjT55ulSEI)
+
+Sprint 5 Deliverables:
+* [Sprint 5 Report](https://github.com/BryanFrederickson/CYBER1-CodeVersion/blob/main/Sprints/Sprint%205/Sprint%205%20Report.md)
+* [Sprint 5 Video](https://www.youtube.com/watch?v=H363BK4t65Y)
 
 ## License
 
