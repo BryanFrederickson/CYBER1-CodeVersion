@@ -614,6 +614,7 @@ class Toplevel1:
         self.C_logCurr = Python_Obfuscator_support.Custom2(self.F_generate)
         self.C_logCurr.place(relx=0.035, rely=0.344, relheight=0.553, relwidth=0.457)
         self.C_logCurr.configure(state="disabled")
+        self.C_logCurr.configure(font="-size 9")
 
         self.L_generateStatus = tk.Label(self.F_generate)
         self.L_generateStatus.place(relx=0.346, rely=0.899, height=31, width=364)
@@ -750,6 +751,7 @@ class Toplevel1:
 
         self.C_logAll = Python_Obfuscator_support.Custom2(self.F_generate)
         self.C_logAll.place(relx=0.519, rely=0.344, relheight=0.553, relwidth=0.457)
+        self.C_logAll.configure(font="-size 9")
 
         self.F_params.tkraise()
 
