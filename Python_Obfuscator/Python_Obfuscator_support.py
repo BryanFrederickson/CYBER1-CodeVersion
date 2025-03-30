@@ -181,21 +181,6 @@ def generate_clones():
         write_to_log(
             f"Parameters: Logic Chance={params['logic_percent']}% Variable Chance={params['vars_percent']}% Function Chance={params['func_percent']}%"
         )
-        stats["var_name_pairs"] = dict()
-        stats["func_name_pairs"] = dict()
-        stats["current_outlang"] = random.choice(params["selected_outputlangs"])
-        write_to_log(f"Output language: {stats['current_outlang']}")
-        _w1.L_currLang.configure(text=stats["current_outlang"])
-
-        # current translation model equals Input language -> Output Language
-        # e.g. model = (English->en->en_package).get_translation(French->fr->fr_package)
-        stats["curr_translate"] = params["lang_packages"][
-            params["lang_names_installed"][params["selected_inputlang"]]
-        ].get_translation(
-            params["lang_packages"][
-                params["lang_names_installed"][stats["current_outlang"]]
-            ]
-        )
 
         stats["total_vars"] = 0
         stats["changed_vars"] = 0
@@ -213,6 +198,21 @@ def generate_clones():
         global wrapped_module
         wrapped_module = MetadataWrapper(params["original_cst"])
 
+        if params["vars_percent"] != 0 or params["func_percent"] != 0:
+            stats["current_outlang"] = random.choice(params["selected_outputlangs"])
+            write_to_log(f"Output language: {stats['current_outlang']}")
+            _w1.L_currLang.configure(text=stats["current_outlang"])
+
+            # current translation model equals Input language -> Output Language
+            # e.g. model = (English->en->en_package).get_translation(French->fr->fr_package)
+            stats["curr_translate"] = params["lang_packages"][
+                params["lang_names_installed"][params["selected_inputlang"]]
+            ].get_translation(
+                params["lang_packages"][
+                    params["lang_names_installed"][stats["current_outlang"]]
+                ]
+            )
+
         if params["logic_percent"] != 0:
             ## Traverse tree with transformer subclass ##
             write_to_log("OBFUSCATING LOGIC...")
@@ -221,12 +221,14 @@ def generate_clones():
             print_to_logCurr("Logic obfuscated...")
 
         if params["vars_percent"] != 0:
+            stats["var_name_pairs"] = dict()
             write_to_log("RENAMING VARIABLES...")
             wrapped_module = wrapped_module.visit(VarRename())
             print("Variables renamed...")
             print_to_logCurr("Variables renamed...")
 
         if params["func_percent"] != 0:
+            stats["func_name_pairs"] = dict()
             write_to_log("RENAMING FUNCTIONS...")
             wrapped_module = wrapped_module.visit(FuncRename())
             print("Functions renamed...")
@@ -1088,6 +1090,8 @@ class LogicRenamer(cst.CSTTransformer):
     def leave_While(
         self, original_node: cst.While, updated_node: cst.While
     ) -> cst.For:  # Handles logic swapping for While -> For looping #
+        
+     try:
 
         if random.random() < (float(params["logic_percent"]) * 0.01):
 
@@ -1098,11 +1102,15 @@ class LogicRenamer(cst.CSTTransformer):
                 if len(updated_node.test.comparisons) == 1 and isinstance(
                     updated_node.test.comparisons[0].operator, cst.LessThan
                 ):  # Handles < logical comparison #
+                    write_to_log("Converted While loop with '<' into For loop")
+                    #self.log_change("Converted While loop with '<' into For loop")
                     return LessThan_Handler(updated_node)
 
                 if len(updated_node.test.comparisons) == 1 and isinstance(
                     updated_node.test.comparisons[0].operator, cst.GreaterThan
                 ):  # Handles > logical comparison #
+                    write_to_log("Converted While loop with '>' into For loop")
+                    #self.log_change("Converted While loop with '>' into For loop")
                     return GreaterThan_Handler(updated_node)
 
                 return updated_node
@@ -1110,34 +1118,58 @@ class LogicRenamer(cst.CSTTransformer):
         else:
 
             return updated_node
+        
+     except Exception as e:
+
+        #self.log_change(f"Error in leave_While() <LOGICRENAME>: {str(e)}") 
+        return original_node 
 
     def leave_If(self, original_node: cst.If, updated_node: cst.If) -> cst.CSTNode:
+
+     try:
 
         if random.random() < (float(params["logic_percent"]) * 0.01):
 
             transformed_node = If_Handler(updated_node)
+            write_to_log("Refactored If-Statement into a function call")
+            #self.log_change("Refactored If-Statement into a function call")
 
             return transformed_node
 
         else:
 
             return updated_node
+        
+     except Exception as e:
+        #self.log_change(f"Error in leave_If() <LOGICRENAME>: {str(e)}") 
+        return original_node 
 
     def leave_For(self, original_node: cst.For, updated_node: cst.For) -> cst.While:
+
+     try:
 
         if random.random() < (float(params["logic_percent"]) * 0.01):
 
             transformed_node = For_Handler(updated_node)
+            write_to_log("Converted For-loop into While-loop")
+            #self.log_change("Converted For-loop into While-loop")
 
             return transformed_node
 
         else:
 
             return updated_node
+        
+     except Exception as e:
+
+        #self.log_change(f"Error in leave_For() <LOGICRENAME>: {str(e)}") 
+        return original_node 
 
 
 # Logic for swapping Less Than symbols in While loops #
-def LessThan_Handler(updated_node):
+def LessThan_Handler(self, updated_node):
+
+ try:
 
     if isinstance(updated_node.test.left, cst.Name):
 
@@ -1160,10 +1192,17 @@ def LessThan_Handler(updated_node):
             body=updated_node.body,
             orelse=updated_node.orelse,
         )
+    
+ except Exception as e:
+
+    #self.log_change(f"Error in LessThan_Handler() <LOGICRENAME>: {str(e)}") 
+    return updated_node 
 
 
 # Logic for swapping Greater Than symbols in While loops #
-def GreaterThan_Handler(updated_node):
+def GreaterThan_Handler(self, updated_node):
+
+ try:
 
     if isinstance(updated_node.test.left, cst.Name):
 
@@ -1193,10 +1232,17 @@ def GreaterThan_Handler(updated_node):
             body=updated_node.body,
             orelse=updated_node.orelse,
         )
+    
+ except Exception as e:
+
+    #self.log_change(f"Error in GreaterThan_Handler() <LOGICRENAME>: {str(e)}") 
+    return updated_node 
 
 
 # Logic for swapping if statements with function def and call #
-def If_Handler(updated_node):
+def If_Handler(self, updated_node):
+
+ try:
 
     func_name = "function"  # Defines the name of the function which calls original if statement #
 
@@ -1222,10 +1268,18 @@ def If_Handler(updated_node):
 
     # Returns multiple nodes which consist of both a function def and a function call #
     return cst.FlattenSentinel([func_def, func_call])
+ 
+ except Exception as e:
+
+    #self.log_change(f"Error in If_Handler() <LOGICRENAME>: {str(e)}") 
+    return updated_node 
+ 
 
 
 # Logic for swapping For loops to While loops encountered while traversing CST #
-def For_Handler(updated_node):
+def For_Handler(self, updated_node):
+
+ try:
 
     loop_var = updated_node.target  # Variable within For loop #
 
@@ -1279,6 +1333,11 @@ def For_Handler(updated_node):
     update_LogicRatio(stats["changed_logic"], stats["total_logic"])
 
     return cst.FlattenSentinel([while_loop])
+ 
+ except Exception as e:
+
+    #self.log_change(f"Error in For_Handler() <LOGICRENAME>: {str(e)}") 
+    return updated_node 
 
 
 if __name__ == "__main__":
