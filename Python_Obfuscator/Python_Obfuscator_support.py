@@ -26,6 +26,7 @@ from unidecode import unidecode
 from coding_abbreviations import abbreviations
 import argostranslate.translate
 import time
+import PyInstaller.__main__
 
 import Python_Obfuscator
 
@@ -224,8 +225,12 @@ def generate_clones():
             ## Traverse tree with transformer subclass ##
             write_to_log("OBFUSCATING LOGIC...")
             wrapped_module = wrapped_module.visit(LogicRenamer())
-            print_to_logCurr(f"Logic Obfuscated: {stats['changed_logic']}/{stats['total_logic']}")
-            write_to_log(f"Logic Obfuscated: {stats['changed_logic']}/{stats['total_logic']}")
+            print_to_logCurr(
+                f"Logic Obfuscated: {stats['changed_logic']}/{stats['total_logic']}"
+            )
+            write_to_log(
+                f"Logic Obfuscated: {stats['changed_logic']}/{stats['total_logic']}"
+            )
 
         if params["vars_percent"] != 0:
             stats["var_name_pairs"] = dict()
@@ -243,14 +248,22 @@ def generate_clones():
                 ]
             )
             write_to_log("RENAMING VARIABLES...")
-            write_to_log(f"Variable Output Naming Convention: {stats["curr_var_namestyle"]}")
+            write_to_log(
+                f"Variable Output Naming Convention: {stats["curr_var_namestyle"]}"
+            )
             wrapped_module = wrapped_module.visit(VarRename())
-            print_to_logCurr(f"Variables Renamed: {stats['changed_vars']}/{stats['total_vars']}")
-            write_to_log(f"Variables Renamed: {stats['changed_vars']}/{stats['total_vars']}")
+            print_to_logCurr(
+                f"Variables Renamed: {stats['changed_vars']}/{stats['total_vars']}"
+            )
+            write_to_log(
+                f"Variables Renamed: {stats['changed_vars']}/{stats['total_vars']}"
+            )
 
         if params["func_percent"] != 0:
             stats["func_name_pairs"] = dict()
-            time.sleep(0.001) # in case running too fast, avoid same choice as var namestyle
+            time.sleep(
+                0.001
+            )  # in case running too fast, avoid same choice as var namestyle
             stats["curr_func_namestyle"] = random.choice(
                 [
                     "camelCase",
@@ -265,10 +278,16 @@ def generate_clones():
                 ]
             )
             write_to_log("RENAMING FUNCTIONS...")
-            write_to_log(f"Function Output Naming Convention: {stats["curr_func_namestyle"]}")
+            write_to_log(
+                f"Function Output Naming Convention: {stats["curr_func_namestyle"]}"
+            )
             wrapped_module = wrapped_module.visit(FuncRename())
-            print_to_logCurr(f"Functions Renamed: {stats['changed_funcs']}/{stats['total_funcs']}")
-            write_to_log(f"Functions Renamed: {stats['changed_funcs']}/{stats['total_funcs']}")
+            print_to_logCurr(
+                f"Functions Renamed: {stats['changed_funcs']}/{stats['total_funcs']}"
+            )
+            write_to_log(
+                f"Functions Renamed: {stats['changed_funcs']}/{stats['total_funcs']}"
+            )
 
             write_to_log("RENAMING FUNCTION CALLS...")
             wrapped_module = wrapped_module.visit(CallRename())
@@ -286,8 +305,34 @@ def generate_clones():
             output_file.write(modified_code)
         output_file.close()
         write_to_log("FILE SUCCESSFULLY WRITTEN")
-        stats["curr_logfile"].close()
         print_to_logAll(f"'{current_filename}' generated.\n")
+
+        write_to_log("GENERATING EXECUTABLE...")
+        print_to_logAll("Generating executable...")
+        folder_dir = os.path.join(
+            params["output_dir"],
+            str(f"{params['input_filename'][:-3]}_Obf{clone_num+1}"),
+        )
+        try:
+            PyInstaller.__main__.run(
+                [
+                    filepath,
+                    "--onefile",
+                    "--distpath",
+                    str(params['output_dir']),
+                    "--workpath",
+                    str(os.path.join(folder_dir, "build")),
+                    "--specpath",
+                    str(os.path.join(folder_dir, "spec")),
+                ]
+            )
+            write_to_log("EXECUTABLE SUCCESSFULLY GENERATED")
+            print_to_logAll("Executable Generated.")
+        except Exception as e:
+            write_to_log("ERROR GENERATING EXECUTABLE")
+            print_to_logAll("Error generating executable!")
+
+        stats["curr_logfile"].close()
     _w1.L_generateStatus.configure(text="Generation Complete.")
 
 
@@ -647,17 +692,17 @@ def translate_name(input: str, isvar: bool) -> str:
     translated_text = str(stats["curr_translate"].translate(spaced_string))
 
     nopunc = translated_text.translate(stats["string_nopunc_model"])
-    concat_text=concat_name(nopunc, isvar)
+    concat_text = concat_name(nopunc, isvar)
 
     if concat_text.isidentifier():
-        output_name=concat_text
+        output_name = concat_text
     else:
         # attempt transliteration
         transliterated = unidecode(nopunc)
         transliterated = transliterated.translate(stats["string_nopunc_model"])
         transliterated = concat_name(transliterated, isvar)
         if transliterated.isidentifier():
-            output_name=transliterated
+            output_name = transliterated
             print_to_logCurr(
                 f"Warning: Translating {'variable' if isvar else 'function'} {input} to {concat_text} failed, transliterated to {transliterated}"
             )
@@ -710,25 +755,37 @@ def concat_name(input: str, isvar: bool) -> str:
         output = output.lower()  # lowercase all
         output = output.title()  # capitalize each word's first char
         output = output.replace(" ", "")  # remove spaces
-        if isvar and ((output in (stats["var_name_pairs"]).values()) or iskeyword(output)):
+        if isvar and (
+            (output in (stats["var_name_pairs"]).values()) or iskeyword(output)
+        ):
             output = output + str(stats["changed_vars"])
-        elif not isvar and ((output in (stats["func_name_pairs"]).values()) or iskeyword(output)):
+        elif not isvar and (
+            (output in (stats["func_name_pairs"]).values()) or iskeyword(output)
+        ):
             output = output + str(stats["changed_funcs"])
     # snake_case
     elif name_style == "snake_case":
         output = output.lower()  # lowercase all
         output = output.replace(" ", "_")  # replace spaces with underscores
-        if isvar and ((output in (stats["var_name_pairs"]).values()) or iskeyword(output)):
+        if isvar and (
+            (output in (stats["var_name_pairs"]).values()) or iskeyword(output)
+        ):
             output = output + "_" + str(stats["changed_vars"])
-        elif not isvar and ((output in (stats["func_name_pairs"]).values()) or iskeyword(output)):
+        elif not isvar and (
+            (output in (stats["func_name_pairs"]).values()) or iskeyword(output)
+        ):
             output = output + "_" + str(stats["changed_funcs"])
     # SCREAMING_SNAKE_CASE
     elif name_style == "SCREAMING_SNAKE_CASE":
         output = output.upper()  # uppercase all
         output = output.replace(" ", "_")  # replace spaces with underscores
-        if isvar and ((output in (stats["var_name_pairs"]).values()) or iskeyword(output)):
+        if isvar and (
+            (output in (stats["var_name_pairs"]).values()) or iskeyword(output)
+        ):
             output = output + "_" + str(stats["changed_vars"])
-        elif not isvar and ((output in (stats["func_name_pairs"]).values()) or iskeyword(output)):
+        elif not isvar and (
+            (output in (stats["func_name_pairs"]).values()) or iskeyword(output)
+        ):
             output = output + "_" + str(stats["changed_funcs"])
     # camel_Snake_Case
     elif name_style == "camel_Snake_Case":
@@ -736,43 +793,63 @@ def concat_name(input: str, isvar: bool) -> str:
         output = output.title()  # capitalize each word's first char
         output = output[0].lower() + output[1:]  # lowercase first char
         output = output.replace(" ", "_")  # replace spaces with underscores
-        if isvar and ((output in (stats["var_name_pairs"]).values()) or iskeyword(output)):
+        if isvar and (
+            (output in (stats["var_name_pairs"]).values()) or iskeyword(output)
+        ):
             output = output + "_" + str(stats["changed_vars"])
-        elif not isvar and ((output in (stats["func_name_pairs"]).values()) or iskeyword(output)):
+        elif not isvar and (
+            (output in (stats["func_name_pairs"]).values()) or iskeyword(output)
+        ):
             output = output + "_" + str(stats["changed_funcs"])
     # Pascal_Snake_Case
     elif name_style == "Pascal_Snake_Case":
         output = output.lower()  # lowercase all
         output = output.title()  # capitalize each word's first char
         output = output.replace(" ", "_")  # replace spaces with underscores
-        if isvar and ((output in (stats["var_name_pairs"]).values()) or iskeyword(output)):
+        if isvar and (
+            (output in (stats["var_name_pairs"]).values()) or iskeyword(output)
+        ):
             output = output + "_" + str(stats["changed_vars"])
-        elif not isvar and ((output in (stats["func_name_pairs"]).values()) or iskeyword(output)):
+        elif not isvar and (
+            (output in (stats["func_name_pairs"]).values()) or iskeyword(output)
+        ):
             output = output + "_" + str(stats["changed_funcs"])
     # kebab-case
     elif name_style == "kebab-case":
         output = output.lower()  # lowercase all
         output = output.replace(" ", "-")  # replace spaces with underscores
-        if isvar and ((output in (stats["var_name_pairs"]).values()) or iskeyword(output)):
+        if isvar and (
+            (output in (stats["var_name_pairs"]).values()) or iskeyword(output)
+        ):
             output = output + "-" + str(stats["changed_vars"])
-        elif not isvar and ((output in (stats["func_name_pairs"]).values()) or iskeyword(output)):
+        elif not isvar and (
+            (output in (stats["func_name_pairs"]).values()) or iskeyword(output)
+        ):
             output = output + "-" + str(stats["changed_funcs"])
     # COBOL-CASE
     elif name_style == "COBOL-CASE":
         output = output.upper()  # uppercase all
         output = output.replace(" ", "-")  # replace spaces with underscores
-        if isvar and ((output in (stats["var_name_pairs"]).values()) or iskeyword(output)):
+        if isvar and (
+            (output in (stats["var_name_pairs"]).values()) or iskeyword(output)
+        ):
             output = output + "-" + str(stats["changed_vars"])
-        elif not isvar and ((output in (stats["func_name_pairs"]).values()) or iskeyword(output)):
+        elif not isvar and (
+            (output in (stats["func_name_pairs"]).values()) or iskeyword(output)
+        ):
             output = output + "-" + str(stats["changed_funcs"])
     # Train-Case
     elif name_style == "Train-Case":
         output = output.lower()  # lowercase all
         output = output.title()  # capitalize each word's first char
         output = output.replace(" ", "-")  # replace spaces with underscores
-        if isvar and ((output in (stats["var_name_pairs"]).values()) or iskeyword(output)):
+        if isvar and (
+            (output in (stats["var_name_pairs"]).values()) or iskeyword(output)
+        ):
             output = output + "-" + str(stats["changed_vars"])
-        elif not isvar and ((output in (stats["func_name_pairs"]).values()) or iskeyword(output)):
+        elif not isvar and (
+            (output in (stats["func_name_pairs"]).values()) or iskeyword(output)
+        ):
             output = output + "-" + str(stats["changed_funcs"])
 
     # note that flatcase and UPPERCASE styles could be supported, but they are not parseable
@@ -843,7 +920,7 @@ class VarRename(cst.CSTTransformer):
         ## Only rename the variable if Gemini has not come up with a synonym for it. Otherwise return the current synonym ##
         if original_varname not in stats["var_name_pairs"]:
             stats["total_vars"] = stats["total_vars"] + 1
-            time.sleep(0.001) # in case running too fast
+            time.sleep(0.001)  # in case running too fast
             if random.random() < (float(params["vars_percent"]) * 0.01):
                 stats["changed_vars"] = stats["changed_vars"] + 1
                 new_name = translate_name(original_varname, True)
@@ -852,12 +929,8 @@ class VarRename(cst.CSTTransformer):
             else:
                 # keep unchanged, add to dict so that it doesn't run this every time an unchanged var is hit
                 stats["var_name_pairs"][original_varname] = original_varname
-                print_to_logCurr(
-                    f"Skipped variable: {original_varname}"
-                )
-                write_to_log(
-                    f"Skipped variable: {original_varname}"
-                )
+                print_to_logCurr(f"Skipped variable: {original_varname}")
+                write_to_log(f"Skipped variable: {original_varname}")
             update_VarRatio(stats["changed_vars"], stats["total_vars"])
         return stats["var_name_pairs"][original_varname]
 
@@ -1126,25 +1199,19 @@ class FuncRename(cst.CSTTransformer):
     def leave_FunctionDef(
         self, node: cst.FunctionDef, updated_node: cst.FunctionDef
     ) -> cst.FunctionDef:
-        orig_name= updated_node.name.value
+        orig_name = updated_node.name.value
         if orig_name not in stats["func_name_pairs"]:
             stats["total_funcs"] = stats["total_funcs"] + 1
-            time.sleep(0.001) # in case running too fast
+            time.sleep(0.001)  # in case running too fast
             if random.random() < (float(params["func_percent"]) * 0.01):
                 stats["changed_funcs"] = stats["changed_funcs"] + 1
                 new_name = translate_name(orig_name, False)
                 stats["func_name_pairs"].update({orig_name: new_name})
 
             else:
-                stats["func_name_pairs"].update(
-                    {orig_name: orig_name}
-                )
-                print_to_logCurr(
-                    f"Skipped function def: {orig_name}"
-                )
-                write_to_log(
-                    f"Skipped function def: {orig_name}"
-                )
+                stats["func_name_pairs"].update({orig_name: orig_name})
+                print_to_logCurr(f"Skipped function def: {orig_name}")
+                write_to_log(f"Skipped function def: {orig_name}")
         # the name node in function def is a child node, thus to change function name via the FunctionDef parent node, use with_deep_changes via:
         # (https://libcst.readthedocs.io/en/latest/nodes.html#libcst.CSTNode.with_deep_changes)
 
@@ -1161,24 +1228,18 @@ class FuncRename(cst.CSTTransformer):
     ) -> cst.ImportAlias:
         alias_node = updated_node.asname
         if alias_node:
-            orig_name=alias_node.name.value
+            orig_name = alias_node.name.value
             if orig_name not in stats["func_name_pairs"]:
                 stats["total_funcs"] = stats["total_funcs"] + 1
-                time.sleep(0.001) # in case running too fast
+                time.sleep(0.001)  # in case running too fast
                 if random.random() < (float(params["func_percent"]) * 0.01):
                     stats["changed_funcs"] = stats["changed_funcs"] + 1
                     new_name = translate_name(orig_name, False)
                     stats["func_name_pairs"].update({orig_name: new_name})
                 else:
-                    stats["func_name_pairs"].update(
-                        {orig_name: orig_name}
-                    )
-                    print_to_logCurr(
-                        f"Skipped function import: {orig_name}"
-                    )
-                    write_to_log(
-                        f"Skipped function import: {orig_name}"
-                    )
+                    stats["func_name_pairs"].update({orig_name: orig_name})
+                    print_to_logCurr(f"Skipped function import: {orig_name}")
+                    write_to_log(f"Skipped function import: {orig_name}")
             update_FuncRatio(stats["changed_funcs"], stats["total_funcs"])
 
             # print("Import alias of \'"+alias_node.name.value+"\' has been renamed to \'"+stats['func_name_pairs'][alias_node.name.value]+"\'")
@@ -1233,7 +1294,7 @@ class LogicRenamer(cst.CSTTransformer):
     ) -> cst.For:  # Handles logic swapping for While -> For looping #
 
         try:
-            time.sleep(0.001) # in case running too fast
+            time.sleep(0.001)  # in case running too fast
             stats["total_logic"] = stats["total_logic"] + 1
             if random.random() < (float(params["logic_percent"]) * 0.01):
 
@@ -1274,7 +1335,7 @@ class LogicRenamer(cst.CSTTransformer):
     def leave_If(self, original_node: cst.If, updated_node: cst.If) -> cst.CSTNode:
 
         try:
-            time.sleep(0.001) # in case running too fast
+            time.sleep(0.001)  # in case running too fast
             stats["total_logic"] = stats["total_logic"] + 1
             if random.random() < (float(params["logic_percent"]) * 0.01):
 
@@ -1297,7 +1358,7 @@ class LogicRenamer(cst.CSTTransformer):
     def leave_For(self, original_node: cst.For, updated_node: cst.For) -> cst.While:
 
         try:
-            time.sleep(0.001) # in case running too fast
+            time.sleep(0.001)  # in case running too fast
             stats["total_logic"] = stats["total_logic"] + 1
             if random.random() < (float(params["logic_percent"]) * 0.01):
 
