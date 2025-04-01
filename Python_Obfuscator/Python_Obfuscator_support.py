@@ -33,6 +33,7 @@ _debug = True  # False to eliminate debug printing from callback functions.
 
 
 def init_params():
+    random.seed()
     global params
     params = dict()
 
@@ -91,6 +92,12 @@ def init_params():
     stats["curr_translate"] = 0  # holds current clone's translation model
 
     stats["curr_logfile"] = None
+
+    stats["curr_func_namestyle"] = None
+    stats["curr_var_namestyle"] = None
+    stats["string_nopunc_model"] = str.maketrans(
+        string.punctuation, " " * len(string.punctuation)
+    )
 
 
 def main(*args):
@@ -222,14 +229,43 @@ def generate_clones():
 
         if params["vars_percent"] != 0:
             stats["var_name_pairs"] = dict()
+            stats["curr_var_namestyle"] = random.choice(
+                [
+                    "camelCase",
+                    "PascalCase",
+                    "snake_case",
+                    "SCREAMING_SNAKE_CASE",
+                    "camel_Snake_Case",
+                    "Pascal_Snake_Case",
+                    "kebab-case",
+                    "COBOL-CASE",
+                    "Train-Case",
+                ]
+            )
             write_to_log("RENAMING VARIABLES...")
+            write_to_log(f"Variable Output Naming Convention: {stats["curr_var_namestyle"]}")
             wrapped_module = wrapped_module.visit(VarRename())
             print("Variables renamed...")
             print_to_logCurr("Variables renamed...")
 
         if params["func_percent"] != 0:
             stats["func_name_pairs"] = dict()
+            time.sleep(0.001) # in case running too fast, avoid same choice as var namestyle
+            stats["curr_func_namestyle"] = random.choice(
+                [
+                    "camelCase",
+                    "PascalCase",
+                    "snake_case",
+                    "SCREAMING_SNAKE_CASE",
+                    "camel_Snake_Case",
+                    "Pascal_Snake_Case",
+                    "kebab-case",
+                    "COBOL-CASE",
+                    "Train-Case",
+                ]
+            )
             write_to_log("RENAMING FUNCTIONS...")
+            write_to_log(f"Function Output Naming Convention: {stats["curr_func_namestyle"]}")
             wrapped_module = wrapped_module.visit(FuncRename())
             print("Functions renamed...")
             print_to_logCurr("Functions renamed...")
@@ -500,14 +536,17 @@ def validate_params():
             _w1.L_outputError.configure(text="Invalid clone count.")
             all_params_valid = False
         else:
-            _w1.L_outputCount.configure(foreground="#000000")
             _w1.LF_outputFiles.configure(foreground="#000000")
+            _w1.L_outputCount.configure(foreground="#000000")
             _w1.L_outputError.configure(text="")
     elif not params["output_dir"]:
         _w1.LF_outputFiles.configure(foreground="#d70005")
         all_params_valid = False
     else:
         _w1.LF_outputFiles.configure(foreground="#000000")
+        _w1.L_outputError.configure(text="")
+        _w1.LF_outputFiles.configure(foreground="#000000")
+        _w1.L_outputCount.configure(foreground="#000000")
         _w1.L_outputError.configure(text="")
 
     # check logic obfuscation params
@@ -593,66 +632,49 @@ def validate_params():
 
 
 def translate_name(input: str, isvar: bool) -> str:
+    if iskeyword(input):
+        print_to_logCurr(
+            f"Input {input} is reserved Python keyword, left unchanged"
+        )
+        write_to_log(
+            f"Input {input} is reserved Python keyword, left unchanged"
+        )
+        return input
     separate_words = split_name(input)
     unabbrev_sepwords = swap_abbreviations(separate_words)
     spaced_string = "".join(unabbrev_sepwords)
 
-    translated_text = stats["curr_translate"].translate(spaced_string)
-    # output_var=''.join(filter(str.isidentifier, translated_text))
-    """
-    alphanumeric_chars = string.ascii_letters + "_"
-    output_var = (
-        re.sub(
-            r"[^a-zA-Z0-9]",
-            lambda x: random.choice(alphanumeric_chars),
-            translated_text,
-        )
-    )[:40]
-    return output_var
-    """
-    nopunc = re.sub(r"[^\w\s]", "", translated_text)
-    concat_text = translated_text.replace(" ", "_")
+    translated_text = str(stats["curr_translate"].translate(spaced_string))
 
-    output_name = "testval_"
+    nopunc = translated_text.translate(stats["string_nopunc_model"])
+    concat_text=concat_name(nopunc, isvar)
+
     if concat_text.isidentifier():
-        if not (iskeyword(concat_text)):
-            if isvar:
-                if concat_text in (stats["var_name_pairs"]).values():
-                    output_name = concat_text + "_" + str(stats["changed_vars"])
-                else:
-                    output_name = concat_text
-            else:
-                if concat_text in (stats["func_name_pairs"]).values():
-                    output_name = concat_text + "_" + str(stats["changed_funcs"])
-                else:
-                    output_name = concat_text
-
-        else:
-            if isvar:
-                output_name = concat_text + "_" + str(stats["changed_vars"])
-            else:
-                output_name = concat_text + "_" + str(stats["changed_funcs"])
+        output_name=concat_text
     else:
         # attempt transliteration
-        transliterated = unidecode(concat_text)
-        transliterated = transliterated.replace(" ", "_")
-        transliterated = re.sub(r"[^\w\s]", "", transliterated)
+        transliterated = unidecode(nopunc)
+        transliterated = transliterated.translate(stats["string_nopunc_model"])
+        transliterated = concat_name(transliterated, isvar)
         if transliterated.isidentifier():
-            if isvar:
-                if transliterated in (stats["var_name_pairs"]).values():
-                    output_name = transliterated + "_" + str(stats["changed_vars"])
-                else:
-                    output_name = transliterated
-            else:
-                if transliterated in (stats["func_name_pairs"]).values():
-                    output_name = transliterated + "_" + str(stats["changed_funcs"])
-                else:
-                    output_name = transliterated
+            output_name=transliterated
+            print_to_logCurr(
+                f"Warning: Translating {'variable' if isvar else 'function'} {input} to {concat_text} failed, transliterated to {transliterated}"
+            )
+            write_to_log(
+                f"Warning: Translating {'variable' if isvar else 'function'} {input} to {concat_text} failed, transliterated to {transliterated}"
+            )
         else:
             if isvar:
                 output_name = "invalidvar_" + str(stats["changed_vars"])
             else:
                 output_name = "invalidfunc_" + str(stats["changed_funcs"])
+            print_to_logCurr(
+                f"Warning: Transliterating {concat_text} to {transliterated} failed, using placeholder {output_name}"
+            )
+            write_to_log(
+                f"Warning: Transliterating {concat_text} to {transliterated} failed, using placeholder {output_name}"
+            )
     print_to_logCurr(
         f"Renamed {'variable' if isvar else 'function'}: {input} -> {output_name}"
     )
@@ -660,6 +682,102 @@ def translate_name(input: str, isvar: bool) -> str:
         f"Renamed {'variable' if isvar else 'function'}: {input} -> {output_name}"
     )
     return output_name
+
+
+# concats list of object subwords based on a specific naming convention
+# input is string of subwords separated by spaces
+def concat_name(input: str, isvar: bool) -> str:
+    if isvar:
+        name_style = stats["curr_var_namestyle"]
+    else:
+        name_style = stats["curr_func_namestyle"]
+    # concat name based on given naming convention style
+    output = input
+    output = output.strip()
+
+    # camelCase
+    if name_style == "camelCase":
+        output = output.lower()  # lowercase all
+        output = output.title()  # capitalize each word's first char
+        output = output[0].lower() + output[1:]  # lowercase first char
+        output = output.replace(" ", "")  # remove spaces
+        if isvar and (output in (stats["var_name_pairs"]).values()):
+            output = output + str(stats["changed_vars"])
+        elif not isvar and (output in (stats["func_name_pairs"]).values()):
+            output = output + str(stats["changed_funcs"])
+    # PascalCase
+    elif name_style == "PascalCase":
+        output = output.lower()  # lowercase all
+        output = output.title()  # capitalize each word's first char
+        output = output.replace(" ", "")  # remove spaces
+        if isvar and ((output in (stats["var_name_pairs"]).values()) or iskeyword(output)):
+            output = output + str(stats["changed_vars"])
+        elif not isvar and ((output in (stats["func_name_pairs"]).values()) or iskeyword(output)):
+            output = output + str(stats["changed_funcs"])
+    # snake_case
+    elif name_style == "snake_case":
+        output = output.lower()  # lowercase all
+        output = output.replace(" ", "_")  # replace spaces with underscores
+        if isvar and ((output in (stats["var_name_pairs"]).values()) or iskeyword(output)):
+            output = output + "_" + str(stats["changed_vars"])
+        elif not isvar and ((output in (stats["func_name_pairs"]).values()) or iskeyword(output)):
+            output = output + "_" + str(stats["changed_funcs"])
+    # SCREAMING_SNAKE_CASE
+    elif name_style == "SCREAMING_SNAKE_CASE":
+        output = output.upper()  # uppercase all
+        output = output.replace(" ", "_")  # replace spaces with underscores
+        if isvar and ((output in (stats["var_name_pairs"]).values()) or iskeyword(output)):
+            output = output + "_" + str(stats["changed_vars"])
+        elif not isvar and ((output in (stats["func_name_pairs"]).values()) or iskeyword(output)):
+            output = output + "_" + str(stats["changed_funcs"])
+    # camel_Snake_Case
+    elif name_style == "camel_Snake_Case":
+        output = output.lower()  # lowercase all
+        output = output.title()  # capitalize each word's first char
+        output = output[0].lower() + output[1:]  # lowercase first char
+        output = output.replace(" ", "_")  # replace spaces with underscores
+        if isvar and ((output in (stats["var_name_pairs"]).values()) or iskeyword(output)):
+            output = output + "_" + str(stats["changed_vars"])
+        elif not isvar and ((output in (stats["func_name_pairs"]).values()) or iskeyword(output)):
+            output = output + "_" + str(stats["changed_funcs"])
+    # Pascal_Snake_Case
+    elif name_style == "Pascal_Snake_Case":
+        output = output.lower()  # lowercase all
+        output = output.title()  # capitalize each word's first char
+        output = output.replace(" ", "_")  # replace spaces with underscores
+        if isvar and ((output in (stats["var_name_pairs"]).values()) or iskeyword(output)):
+            output = output + "_" + str(stats["changed_vars"])
+        elif not isvar and ((output in (stats["func_name_pairs"]).values()) or iskeyword(output)):
+            output = output + "_" + str(stats["changed_funcs"])
+    # kebab-case
+    elif name_style == "kebab-case":
+        output = output.lower()  # lowercase all
+        output = output.replace(" ", "-")  # replace spaces with underscores
+        if isvar and ((output in (stats["var_name_pairs"]).values()) or iskeyword(output)):
+            output = output + "-" + str(stats["changed_vars"])
+        elif not isvar and ((output in (stats["func_name_pairs"]).values()) or iskeyword(output)):
+            output = output + "-" + str(stats["changed_funcs"])
+    # COBOL-CASE
+    elif name_style == "COBOL-CASE":
+        output = output.upper()  # uppercase all
+        output = output.replace(" ", "-")  # replace spaces with underscores
+        if isvar and ((output in (stats["var_name_pairs"]).values()) or iskeyword(output)):
+            output = output + "-" + str(stats["changed_vars"])
+        elif not isvar and ((output in (stats["func_name_pairs"]).values()) or iskeyword(output)):
+            output = output + "-" + str(stats["changed_funcs"])
+    # Train-Case
+    elif name_style == "Train-Case":
+        output = output.lower()  # lowercase all
+        output = output.title()  # capitalize each word's first char
+        output = output.replace(" ", "-")  # replace spaces with underscores
+        if isvar and ((output in (stats["var_name_pairs"]).values()) or iskeyword(output)):
+            output = output + "-" + str(stats["changed_vars"])
+        elif not isvar and ((output in (stats["func_name_pairs"]).values()) or iskeyword(output)):
+            output = output + "-" + str(stats["changed_funcs"])
+
+    # note that flatcase and UPPERCASE styles could be supported, but they are not parseable
+    # as input var/func names, so to ensure output code can be reused, they will not be implemented
+    return output
 
 
 # splits given var/function name into individual words based on naming conventions
@@ -1090,254 +1208,253 @@ class LogicRenamer(cst.CSTTransformer):
     def leave_While(
         self, original_node: cst.While, updated_node: cst.While
     ) -> cst.For:  # Handles logic swapping for While -> For looping #
-        
-     try:
 
-        if random.random() < (float(params["logic_percent"]) * 0.01):
+        try:
 
-            if isinstance(
-                updated_node.test, cst.Comparison
-            ):  # If 'while' loop contains any type of logical comparison ( >, <, ==, >=, <=, etc.) #
+            if random.random() < (float(params["logic_percent"]) * 0.01):
 
-                if len(updated_node.test.comparisons) == 1 and isinstance(
-                    updated_node.test.comparisons[0].operator, cst.LessThan
-                ):  # Handles < logical comparison #
-                    write_to_log("Converted While loop with '<' into For loop")
-                    #self.log_change("Converted While loop with '<' into For loop")
-                    return LessThan_Handler(updated_node)
+                if isinstance(
+                    updated_node.test, cst.Comparison
+                ):  # If 'while' loop contains any type of logical comparison ( >, <, ==, >=, <=, etc.) #
 
-                if len(updated_node.test.comparisons) == 1 and isinstance(
-                    updated_node.test.comparisons[0].operator, cst.GreaterThan
-                ):  # Handles > logical comparison #
-                    write_to_log("Converted While loop with '>' into For loop")
-                    #self.log_change("Converted While loop with '>' into For loop")
-                    return GreaterThan_Handler(updated_node)
+                    if len(updated_node.test.comparisons) == 1 and isinstance(
+                        updated_node.test.comparisons[0].operator, cst.LessThan
+                    ):  # Handles < logical comparison #
+                        write_to_log("Converted While loop with '<' into For loop")
+                        # self.log_change("Converted While loop with '<' into For loop")
+                        return LessThan_Handler(updated_node)
+
+                    if len(updated_node.test.comparisons) == 1 and isinstance(
+                        updated_node.test.comparisons[0].operator, cst.GreaterThan
+                    ):  # Handles > logical comparison #
+                        write_to_log("Converted While loop with '>' into For loop")
+                        # self.log_change("Converted While loop with '>' into For loop")
+                        return GreaterThan_Handler(updated_node)
+
+                    return updated_node
+
+            else:
 
                 return updated_node
 
-        else:
+        except Exception as e:
 
-            return updated_node
-        
-     except Exception as e:
-
-        #self.log_change(f"Error in leave_While() <LOGICRENAME>: {str(e)}") 
-        return original_node 
+            # self.log_change(f"Error in leave_While() <LOGICRENAME>: {str(e)}")
+            return original_node
 
     def leave_If(self, original_node: cst.If, updated_node: cst.If) -> cst.CSTNode:
 
-     try:
+        try:
 
-        if random.random() < (float(params["logic_percent"]) * 0.01):
+            if random.random() < (float(params["logic_percent"]) * 0.01):
 
-            transformed_node = If_Handler(updated_node)
-            write_to_log("Refactored If-Statement into a function call")
-            #self.log_change("Refactored If-Statement into a function call")
+                transformed_node = If_Handler(updated_node)
+                write_to_log("Refactored If-Statement into a function call")
+                # self.log_change("Refactored If-Statement into a function call")
 
-            return transformed_node
+                return transformed_node
 
-        else:
+            else:
 
-            return updated_node
-        
-     except Exception as e:
-        #self.log_change(f"Error in leave_If() <LOGICRENAME>: {str(e)}") 
-        return original_node 
+                return updated_node
+
+        except Exception as e:
+            # self.log_change(f"Error in leave_If() <LOGICRENAME>: {str(e)}")
+            return original_node
 
     def leave_For(self, original_node: cst.For, updated_node: cst.For) -> cst.While:
 
-     try:
+        try:
 
-        if random.random() < (float(params["logic_percent"]) * 0.01):
+            if random.random() < (float(params["logic_percent"]) * 0.01):
 
-            transformed_node = For_Handler(updated_node)
-            write_to_log("Converted For-loop into While-loop")
-            #self.log_change("Converted For-loop into While-loop")
+                transformed_node = For_Handler(updated_node)
+                write_to_log("Converted For-loop into While-loop")
+                # self.log_change("Converted For-loop into While-loop")
 
-            return transformed_node
+                return transformed_node
 
-        else:
+            else:
 
-            return updated_node
-        
-     except Exception as e:
+                return updated_node
 
-        #self.log_change(f"Error in leave_For() <LOGICRENAME>: {str(e)}") 
-        return original_node 
+        except Exception as e:
+
+            # self.log_change(f"Error in leave_For() <LOGICRENAME>: {str(e)}")
+            return original_node
 
 
 # Logic for swapping Less Than symbols in While loops #
 def LessThan_Handler(self, updated_node):
 
- try:
+    try:
 
-    if isinstance(updated_node.test.left, cst.Name):
+        if isinstance(updated_node.test.left, cst.Name):
 
-        loop_var = updated_node.test.left  # Assigns to var if on LHS of operator #
-        num_bound = updated_node.test.comparisons[
-            0
-        ].comparator  # Assigns to integer that terminates loop #
+            loop_var = updated_node.test.left  # Assigns to var if on LHS of operator #
+            num_bound = updated_node.test.comparisons[
+                0
+            ].comparator  # Assigns to integer that terminates loop #
 
-        stats["total_logic"] = stats["total_logic"] + 1
-        stats["changed_logic"] = stats["changed_logic"] + 1
-        update_LogicRatio(stats["changed_logic"], stats["total_logic"])
+            stats["total_logic"] = stats["total_logic"] + 1
+            stats["changed_logic"] = stats["changed_logic"] + 1
+            update_LogicRatio(stats["changed_logic"], stats["total_logic"])
 
-        # Return new CST module structure back into the original CST #
-        return cst.For(
-            target=loop_var,
-            iter=cst.Call(
-                func=cst.Name("range"),
-                args=[cst.Arg(loop_var), cst.Arg(num_bound)],
-            ),
-            body=updated_node.body,
-            orelse=updated_node.orelse,
-        )
-    
- except Exception as e:
+            # Return new CST module structure back into the original CST #
+            return cst.For(
+                target=loop_var,
+                iter=cst.Call(
+                    func=cst.Name("range"),
+                    args=[cst.Arg(loop_var), cst.Arg(num_bound)],
+                ),
+                body=updated_node.body,
+                orelse=updated_node.orelse,
+            )
 
-    #self.log_change(f"Error in LessThan_Handler() <LOGICRENAME>: {str(e)}") 
-    return updated_node 
+    except Exception as e:
+
+        # self.log_change(f"Error in LessThan_Handler() <LOGICRENAME>: {str(e)}")
+        return updated_node
 
 
 # Logic for swapping Greater Than symbols in While loops #
 def GreaterThan_Handler(self, updated_node):
 
- try:
+    try:
 
-    if isinstance(updated_node.test.left, cst.Name):
+        if isinstance(updated_node.test.left, cst.Name):
 
-        loop_var = updated_node.test.left  # Assigns to var if on LHS of operator #
-        num_bound = updated_node.test.comparisons[
-            0
-        ].comparator  # Assigns to integer that terminates loop #
-        step = step = cst.UnaryOperation(
-            operator=cst.Minus(), expression=cst.Integer("1")
-        )  # Set increment value #
+            loop_var = updated_node.test.left  # Assigns to var if on LHS of operator #
+            num_bound = updated_node.test.comparisons[
+                0
+            ].comparator  # Assigns to integer that terminates loop #
+            step = step = cst.UnaryOperation(
+                operator=cst.Minus(), expression=cst.Integer("1")
+            )  # Set increment value #
 
-        stats["total_logic"] = stats["total_logic"] + 1
-        stats["changed_logic"] = stats["changed_logic"] + 1
-        update_LogicRatio(stats["changed_logic"], stats["total_logic"])
+            stats["total_logic"] = stats["total_logic"] + 1
+            stats["changed_logic"] = stats["changed_logic"] + 1
+            update_LogicRatio(stats["changed_logic"], stats["total_logic"])
 
-        # Return new CST For loop module back into the original CST #
-        return cst.For(
-            target=loop_var,
-            iter=cst.Call(
-                func=cst.Name("range"),
-                args=[
-                    cst.Arg(loop_var),
-                    cst.Arg(num_bound),
-                    cst.Arg(step),
-                ],
-            ),
-            body=updated_node.body,
-            orelse=updated_node.orelse,
-        )
-    
- except Exception as e:
+            # Return new CST For loop module back into the original CST #
+            return cst.For(
+                target=loop_var,
+                iter=cst.Call(
+                    func=cst.Name("range"),
+                    args=[
+                        cst.Arg(loop_var),
+                        cst.Arg(num_bound),
+                        cst.Arg(step),
+                    ],
+                ),
+                body=updated_node.body,
+                orelse=updated_node.orelse,
+            )
 
-    #self.log_change(f"Error in GreaterThan_Handler() <LOGICRENAME>: {str(e)}") 
-    return updated_node 
+    except Exception as e:
+
+        # self.log_change(f"Error in GreaterThan_Handler() <LOGICRENAME>: {str(e)}")
+        return updated_node
 
 
 # Logic for swapping if statements with function def and call #
 def If_Handler(self, updated_node):
 
- try:
+    try:
 
-    func_name = "function"  # Defines the name of the function which calls original if statement #
+        func_name = "function"  # Defines the name of the function which calls original if statement #
 
-    # Creation of function definition node #
-    func_def = cst.FunctionDef(
-        name=cst.Name(func_name),
-        params=cst.Parameters(),
-        body=cst.IndentedBlock(body=[updated_node]),
-    )
-
-    # Creation of explicit function call node #
-    func_call = cst.Expr(
-        value=cst.Call(
-            func=cst.Name(func_name),
-            args=[],
-            whitespace_after_func=cst.SimpleWhitespace(""),
+        # Creation of function definition node #
+        func_def = cst.FunctionDef(
+            name=cst.Name(func_name),
+            params=cst.Parameters(),
+            body=cst.IndentedBlock(body=[updated_node]),
         )
-    )
 
-    stats["total_logic"] = stats["total_logic"] + 1
-    stats["changed_logic"] = stats["changed_logic"] + 1
-    update_LogicRatio(stats["changed_logic"], stats["total_logic"])
+        # Creation of explicit function call node #
+        func_call = cst.Expr(
+            value=cst.Call(
+                func=cst.Name(func_name),
+                args=[],
+                whitespace_after_func=cst.SimpleWhitespace(""),
+            )
+        )
 
-    # Returns multiple nodes which consist of both a function def and a function call #
-    return cst.FlattenSentinel([func_def, func_call])
- 
- except Exception as e:
+        stats["total_logic"] = stats["total_logic"] + 1
+        stats["changed_logic"] = stats["changed_logic"] + 1
+        update_LogicRatio(stats["changed_logic"], stats["total_logic"])
 
-    #self.log_change(f"Error in If_Handler() <LOGICRENAME>: {str(e)}") 
-    return updated_node 
- 
+        # Returns multiple nodes which consist of both a function def and a function call #
+        return cst.FlattenSentinel([func_def, func_call])
+
+    except Exception as e:
+
+        # self.log_change(f"Error in If_Handler() <LOGICRENAME>: {str(e)}")
+        return updated_node
 
 
 # Logic for swapping For loops to While loops encountered while traversing CST #
 def For_Handler(self, updated_node):
 
- try:
+    try:
 
-    loop_var = updated_node.target  # Variable within For loop #
+        loop_var = updated_node.target  # Variable within For loop #
 
-    loop_args = updated_node.iter.args  # List of loop arguments #
-    start = loop_args[0].value  # Starting integer condition #
-    stop = loop_args[1].value  # Ending integer condition #
+        loop_args = updated_node.iter.args  # List of loop arguments #
+        start = loop_args[0].value  # Starting integer condition #
+        stop = loop_args[1].value  # Ending integer condition #
 
-    if len(loop_args) == 3:
-        step = loop_args[2].value
-    else:
-
-        if isinstance(start, cst.Integer) and isinstance(stop, cst.Integer):
-            step_value = "-1" if int(start.value) > int(stop.value) else "1"
-            step = cst.Integer(step_value)
+        if len(loop_args) == 3:
+            step = loop_args[2].value
         else:
-            step = cst.Integer("1")
 
-    operation = (
-        cst.LessThan()
-        if (isinstance(step, cst.Integer) and int(step.value) > 0)
-        else cst.GreaterThan()
-    )  # Type of operation (+,-,>,<, etc.) #
+            if isinstance(start, cst.Integer) and isinstance(stop, cst.Integer):
+                step_value = "-1" if int(start.value) > int(stop.value) else "1"
+                step = cst.Integer(step_value)
+            else:
+                step = cst.Integer("1")
 
-    # Creation of While loop node #
-    while_loop = cst.While(
-        test=cst.Comparison(
-            left=loop_var,
-            comparisons=[cst.ComparisonTarget(operator=operation, comparator=stop)],
-        ),
-        body=updated_node.body,
-        orelse=updated_node.orelse,
-    )
+        operation = (
+            cst.LessThan()
+            if (isinstance(step, cst.Integer) and int(step.value) > 0)
+            else cst.GreaterThan()
+        )  # Type of operation (+,-,>,<, etc.) #
 
-    # Creation of variable increment line living within while loop #
-    increment = cst.SimpleStatementLine(
-        body=[
-            cst.Assign(
-                targets=[cst.AssignTarget(target=loop_var)],
-                value=cst.BinaryOperation(
-                    left=loop_var, operator=cst.Add(), right=step
-                ),
-            )
-        ]
-    )
+        # Creation of While loop node #
+        while_loop = cst.While(
+            test=cst.Comparison(
+                left=loop_var,
+                comparisons=[cst.ComparisonTarget(operator=operation, comparator=stop)],
+            ),
+            body=updated_node.body,
+            orelse=updated_node.orelse,
+        )
 
-    updated_body = list(while_loop.body.body) + [increment]
-    while_loop = while_loop.with_changes(body=cst.IndentedBlock(body=updated_body))
+        # Creation of variable increment line living within while loop #
+        increment = cst.SimpleStatementLine(
+            body=[
+                cst.Assign(
+                    targets=[cst.AssignTarget(target=loop_var)],
+                    value=cst.BinaryOperation(
+                        left=loop_var, operator=cst.Add(), right=step
+                    ),
+                )
+            ]
+        )
 
-    stats["total_logic"] = stats["total_logic"] + 1
-    stats["changed_logic"] = stats["changed_logic"] + 1
-    update_LogicRatio(stats["changed_logic"], stats["total_logic"])
+        updated_body = list(while_loop.body.body) + [increment]
+        while_loop = while_loop.with_changes(body=cst.IndentedBlock(body=updated_body))
 
-    return cst.FlattenSentinel([while_loop])
- 
- except Exception as e:
+        stats["total_logic"] = stats["total_logic"] + 1
+        stats["changed_logic"] = stats["changed_logic"] + 1
+        update_LogicRatio(stats["changed_logic"], stats["total_logic"])
 
-    #self.log_change(f"Error in For_Handler() <LOGICRENAME>: {str(e)}") 
-    return updated_node 
+        return cst.FlattenSentinel([while_loop])
+
+    except Exception as e:
+
+        # self.log_change(f"Error in For_Handler() <LOGICRENAME>: {str(e)}")
+        return updated_node
 
 
 if __name__ == "__main__":

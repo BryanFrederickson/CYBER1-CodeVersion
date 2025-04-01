@@ -747,7 +747,7 @@ class Toplevel1:
         self.L_currLang.configure(foreground="#000000")
         self.L_currLang.configure(highlightbackground="#d9d9d9")
         self.L_currLang.configure(highlightcolor="#000000")
-        self.L_currLang.configure(text="Curr Lang")
+        self.L_currLang.configure(text="")
 
         self.C_logAll = Python_Obfuscator_support.Custom2(self.F_generate)
         self.C_logAll.place(relx=0.519, rely=0.344, relheight=0.553, relwidth=0.457)
