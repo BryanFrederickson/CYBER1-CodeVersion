@@ -224,8 +224,8 @@ def generate_clones():
             ## Traverse tree with transformer subclass ##
             write_to_log("OBFUSCATING LOGIC...")
             wrapped_module = wrapped_module.visit(LogicRenamer())
-            print("Logic obfuscated...")
-            print_to_logCurr("Logic obfuscated...")
+            print_to_logCurr(f"Logic Obfuscated: {stats['changed_logic']}/{stats['total_logic']}")
+            write_to_log(f"Logic Obfuscated: {stats['changed_logic']}/{stats['total_logic']}")
 
         if params["vars_percent"] != 0:
             stats["var_name_pairs"] = dict()
@@ -245,8 +245,8 @@ def generate_clones():
             write_to_log("RENAMING VARIABLES...")
             write_to_log(f"Variable Output Naming Convention: {stats["curr_var_namestyle"]}")
             wrapped_module = wrapped_module.visit(VarRename())
-            print("Variables renamed...")
-            print_to_logCurr("Variables renamed...")
+            print_to_logCurr(f"Variables Renamed: {stats['changed_vars']}/{stats['total_vars']}")
+            write_to_log(f"Variables Renamed: {stats['changed_vars']}/{stats['total_vars']}")
 
         if params["func_percent"] != 0:
             stats["func_name_pairs"] = dict()
@@ -267,13 +267,13 @@ def generate_clones():
             write_to_log("RENAMING FUNCTIONS...")
             write_to_log(f"Function Output Naming Convention: {stats["curr_func_namestyle"]}")
             wrapped_module = wrapped_module.visit(FuncRename())
-            print("Functions renamed...")
-            print_to_logCurr("Functions renamed...")
+            print_to_logCurr(f"Functions Renamed: {stats['changed_funcs']}/{stats['total_funcs']}")
+            write_to_log(f"Functions Renamed: {stats['changed_funcs']}/{stats['total_funcs']}")
 
             write_to_log("RENAMING FUNCTION CALLS...")
             wrapped_module = wrapped_module.visit(CallRename())
-            print("Function calls renamed...")
             print_to_logCurr("Function calls renamed...")
+            write_to_log("Function calls renamed...")
 
         modified_code = wrapped_module.code
         # [:-3] removes .py extension
@@ -634,10 +634,10 @@ def validate_params():
 def translate_name(input: str, isvar: bool) -> str:
     if iskeyword(input):
         print_to_logCurr(
-            f"Input {input} is reserved Python keyword, left unchanged"
+            f"{'Variable' if isvar else 'Function'} {input} is reserved Python keyword, left unchanged"
         )
         write_to_log(
-            f"Input {input} is reserved Python keyword, left unchanged"
+            f"{'Variable' if isvar else 'Function'} {input} is reserved Python keyword, left unchanged"
         )
         return input
     separate_words = split_name(input)
@@ -843,6 +843,7 @@ class VarRename(cst.CSTTransformer):
         ## Only rename the variable if Gemini has not come up with a synonym for it. Otherwise return the current synonym ##
         if original_varname not in stats["var_name_pairs"]:
             stats["total_vars"] = stats["total_vars"] + 1
+            time.sleep(0.001) # in case running too fast
             if random.random() < (float(params["vars_percent"]) * 0.01):
                 stats["changed_vars"] = stats["changed_vars"] + 1
                 new_name = translate_name(original_varname, True)
@@ -851,6 +852,12 @@ class VarRename(cst.CSTTransformer):
             else:
                 # keep unchanged, add to dict so that it doesn't run this every time an unchanged var is hit
                 stats["var_name_pairs"][original_varname] = original_varname
+                print_to_logCurr(
+                    f"Skipped variable: {original_varname}"
+                )
+                write_to_log(
+                    f"Skipped variable: {original_varname}"
+                )
             update_VarRatio(stats["changed_vars"], stats["total_vars"])
         return stats["var_name_pairs"][original_varname]
 
@@ -1119,16 +1126,24 @@ class FuncRename(cst.CSTTransformer):
     def leave_FunctionDef(
         self, node: cst.FunctionDef, updated_node: cst.FunctionDef
     ) -> cst.FunctionDef:
-        if updated_node.name.value not in stats["func_name_pairs"]:
+        orig_name= updated_node.name.value
+        if orig_name not in stats["func_name_pairs"]:
             stats["total_funcs"] = stats["total_funcs"] + 1
+            time.sleep(0.001) # in case running too fast
             if random.random() < (float(params["func_percent"]) * 0.01):
                 stats["changed_funcs"] = stats["changed_funcs"] + 1
-                new_name = translate_name(updated_node.name.value, False)
-                stats["func_name_pairs"].update({updated_node.name.value: new_name})
+                new_name = translate_name(orig_name, False)
+                stats["func_name_pairs"].update({orig_name: new_name})
 
             else:
                 stats["func_name_pairs"].update(
-                    {updated_node.name.value: updated_node.name.value}
+                    {orig_name: orig_name}
+                )
+                print_to_logCurr(
+                    f"Skipped function def: {orig_name}"
+                )
+                write_to_log(
+                    f"Skipped function def: {orig_name}"
                 )
         # the name node in function def is a child node, thus to change function name via the FunctionDef parent node, use with_deep_changes via:
         # (https://libcst.readthedocs.io/en/latest/nodes.html#libcst.CSTNode.with_deep_changes)
@@ -1136,7 +1151,7 @@ class FuncRename(cst.CSTTransformer):
         update_FuncRatio(stats["changed_funcs"], stats["total_funcs"])
         # print("Function def of \'"+updated_node.name.value+"\' has been renamed to \'"+stats['func_name_pairs'][updated_node.name.value]+"\'")
         return updated_node.with_deep_changes(
-            updated_node.name, value=stats["func_name_pairs"][updated_node.name.value]
+            updated_node.name, value=stats["func_name_pairs"][orig_name]
         )
 
     # rename function names in a "import x as y" node
@@ -1146,22 +1161,30 @@ class FuncRename(cst.CSTTransformer):
     ) -> cst.ImportAlias:
         alias_node = updated_node.asname
         if alias_node:
-            if alias_node.name.value not in stats["func_name_pairs"]:
+            orig_name=alias_node.name.value
+            if orig_name not in stats["func_name_pairs"]:
                 stats["total_funcs"] = stats["total_funcs"] + 1
+                time.sleep(0.001) # in case running too fast
                 if random.random() < (float(params["func_percent"]) * 0.01):
                     stats["changed_funcs"] = stats["changed_funcs"] + 1
-                    new_name = translate_name(alias_node.name.value, False)
-                    stats["func_name_pairs"].update({alias_node.name.value: new_name})
+                    new_name = translate_name(orig_name, False)
+                    stats["func_name_pairs"].update({orig_name: new_name})
                 else:
                     stats["func_name_pairs"].update(
-                        {alias_node.name.value: alias_node.name.value}
+                        {orig_name: orig_name}
+                    )
+                    print_to_logCurr(
+                        f"Skipped function import: {orig_name}"
+                    )
+                    write_to_log(
+                        f"Skipped function import: {orig_name}"
                     )
             update_FuncRatio(stats["changed_funcs"], stats["total_funcs"])
 
             # print("Import alias of \'"+alias_node.name.value+"\' has been renamed to \'"+stats['func_name_pairs'][alias_node.name.value]+"\'")
             return updated_node.with_deep_changes(
                 updated_node.asname.name,
-                value=stats["func_name_pairs"][alias_node.name.value],
+                value=stats["func_name_pairs"][orig_name],
             )
         return updated_node
 
@@ -1210,7 +1233,8 @@ class LogicRenamer(cst.CSTTransformer):
     ) -> cst.For:  # Handles logic swapping for While -> For looping #
 
         try:
-
+            time.sleep(0.001) # in case running too fast
+            stats["total_logic"] = stats["total_logic"] + 1
             if random.random() < (float(params["logic_percent"]) * 0.01):
 
                 if isinstance(
@@ -1221,20 +1245,25 @@ class LogicRenamer(cst.CSTTransformer):
                         updated_node.test.comparisons[0].operator, cst.LessThan
                     ):  # Handles < logical comparison #
                         write_to_log("Converted While loop with '<' into For loop")
+                        stats["changed_logic"] = stats["changed_logic"] + 1
                         # self.log_change("Converted While loop with '<' into For loop")
+                        update_LogicRatio(stats["changed_logic"], stats["total_logic"])
                         return LessThan_Handler(updated_node)
 
                     if len(updated_node.test.comparisons) == 1 and isinstance(
                         updated_node.test.comparisons[0].operator, cst.GreaterThan
                     ):  # Handles > logical comparison #
                         write_to_log("Converted While loop with '>' into For loop")
+                        stats["changed_logic"] = stats["changed_logic"] + 1
                         # self.log_change("Converted While loop with '>' into For loop")
+                        update_LogicRatio(stats["changed_logic"], stats["total_logic"])
                         return GreaterThan_Handler(updated_node)
 
+                    update_LogicRatio(stats["changed_logic"], stats["total_logic"])
                     return updated_node
 
             else:
-
+                update_LogicRatio(stats["changed_logic"], stats["total_logic"])
                 return updated_node
 
         except Exception as e:
@@ -1245,42 +1274,48 @@ class LogicRenamer(cst.CSTTransformer):
     def leave_If(self, original_node: cst.If, updated_node: cst.If) -> cst.CSTNode:
 
         try:
-
+            time.sleep(0.001) # in case running too fast
+            stats["total_logic"] = stats["total_logic"] + 1
             if random.random() < (float(params["logic_percent"]) * 0.01):
 
                 transformed_node = If_Handler(updated_node)
                 write_to_log("Refactored If-Statement into a function call")
                 # self.log_change("Refactored If-Statement into a function call")
-
+                stats["changed_logic"] = stats["changed_logic"] + 1
+                update_LogicRatio(stats["changed_logic"], stats["total_logic"])
                 return transformed_node
 
             else:
-
+                update_LogicRatio(stats["changed_logic"], stats["total_logic"])
                 return updated_node
 
         except Exception as e:
             # self.log_change(f"Error in leave_If() <LOGICRENAME>: {str(e)}")
+            update_LogicRatio(stats["changed_logic"], stats["total_logic"])
             return original_node
 
     def leave_For(self, original_node: cst.For, updated_node: cst.For) -> cst.While:
 
         try:
-
+            time.sleep(0.001) # in case running too fast
+            stats["total_logic"] = stats["total_logic"] + 1
             if random.random() < (float(params["logic_percent"]) * 0.01):
 
                 transformed_node = For_Handler(updated_node)
                 write_to_log("Converted For-loop into While-loop")
+                stats["changed_logic"] = stats["changed_logic"] + 1
                 # self.log_change("Converted For-loop into While-loop")
-
+                update_LogicRatio(stats["changed_logic"], stats["total_logic"])
                 return transformed_node
 
             else:
-
+                update_LogicRatio(stats["changed_logic"], stats["total_logic"])
                 return updated_node
 
         except Exception as e:
 
             # self.log_change(f"Error in leave_For() <LOGICRENAME>: {str(e)}")
+            update_LogicRatio(stats["changed_logic"], stats["total_logic"])
             return original_node
 
 
@@ -1295,10 +1330,6 @@ def LessThan_Handler(self, updated_node):
             num_bound = updated_node.test.comparisons[
                 0
             ].comparator  # Assigns to integer that terminates loop #
-
-            stats["total_logic"] = stats["total_logic"] + 1
-            stats["changed_logic"] = stats["changed_logic"] + 1
-            update_LogicRatio(stats["changed_logic"], stats["total_logic"])
 
             # Return new CST module structure back into the original CST #
             return cst.For(
@@ -1331,10 +1362,6 @@ def GreaterThan_Handler(self, updated_node):
             step = step = cst.UnaryOperation(
                 operator=cst.Minus(), expression=cst.Integer("1")
             )  # Set increment value #
-
-            stats["total_logic"] = stats["total_logic"] + 1
-            stats["changed_logic"] = stats["changed_logic"] + 1
-            update_LogicRatio(stats["changed_logic"], stats["total_logic"])
 
             # Return new CST For loop module back into the original CST #
             return cst.For(
@@ -1379,10 +1406,6 @@ def If_Handler(self, updated_node):
                 whitespace_after_func=cst.SimpleWhitespace(""),
             )
         )
-
-        stats["total_logic"] = stats["total_logic"] + 1
-        stats["changed_logic"] = stats["changed_logic"] + 1
-        update_LogicRatio(stats["changed_logic"], stats["total_logic"])
 
         # Returns multiple nodes which consist of both a function def and a function call #
         return cst.FlattenSentinel([func_def, func_call])
@@ -1444,10 +1467,6 @@ def For_Handler(self, updated_node):
 
         updated_body = list(while_loop.body.body) + [increment]
         while_loop = while_loop.with_changes(body=cst.IndentedBlock(body=updated_body))
-
-        stats["total_logic"] = stats["total_logic"] + 1
-        stats["changed_logic"] = stats["changed_logic"] + 1
-        update_LogicRatio(stats["changed_logic"], stats["total_logic"])
 
         return cst.FlattenSentinel([while_loop])
 
