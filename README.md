@@ -21,7 +21,7 @@ This program is made to help install specific offline translation packages from 
 
 #### Prerequisites
 These instructions are written primarily for modern Windows. For installing prerqs on Windows, run Command Prompt as administrator.
-1. Python3 **[3.9 or earlier]** - Can be installed in multiple ways. The easiest way for Windows is via [installers](https://www.python.org/downloads/release/python-3913/). Check it's installed via `python --version` in terminal/command line and that the python installation was added to PATH environment variable.
+1. Python3 **[3.9 or earlier, see Known Problems]** - Can be installed in multiple ways. The easiest way for Windows is via [installers](https://www.python.org/downloads/release/python-3913/). Check it's installed via `python --version` in terminal/command line and that the python installation was added to PATH environment variable.
 2. tkinter - The Python library used to render a GUI for our programs. The library is usually included with Python installs, but you can check via `pip install tk` on Windows or `sudo apt-get install python3-tk` on Ubuntu.
 3. [Argos Translate](https://github.com/argosopentech/argos-translate) - A library for offline language translation in Python. To install, simply run `pip install argostranslate` (more info in linked Repo).
 
@@ -32,8 +32,7 @@ Navigate to the [`Langs_Installer`](https://github.com/BryanFrederickson/CYBER1-
 - `ArgosTranslate_Installed_Langs.py` - This file does not contain a GUI and the code must be manually configured (commenting out options) to run as desired. The python script can be used to uninstall all installed Argos Translate language packages as well as simply print all packages currently installed.
 - 
 #### Known Problems
-- Currently, there is an issue installing Argos Translate on Python 3.10 or later due to a deprecated dependency, so Python 3.9 - 3.5 is required. Documentation will be updated when issue is fixed.
-
+- Currently, there is an issue installing Argos Translate on Python 3.10 or later due to a deprecated dependency, so Python 3.9 - 3.5 is required when installing Argos Translate (Python can be updated after). Documentation will be updated when issue is fixed.
 ## 2. Python Obfuscator
 This program allows for automated generation of obfuscated semantic clones. A selected input Python source code file will be obfuscated, where variables/functions are translated to other languages and logic loops are changed, while still being functional.
 
@@ -41,7 +40,7 @@ This program allows for automated generation of obfuscated semantic clones. A se
 These instructions are written primarily for modern Windows. For installing prerqs on Windows, run Command Prompt as administrator.
 
 The following prerequisites are the same as above for the Argos Translate Language Installer.
-1. Python3 **[3.9 or earlier]** - Can be installed in multiple ways. The easiest way for Windows is via [installers](https://www.python.org/downloads/release/python-3913/). Check it's installed via `python --version` in terminal/command line and that the python installation was added to PATH environment variable.
+1. Python3 **[3.9 or earlier, see Known Problems]** - Can be installed in multiple ways. The easiest way for Windows is via [installers](https://www.python.org/downloads/release/python-3913/). Check it's installed via `python --version` in terminal/command line and that the python installation was added to PATH environment variable.
 2. tkinter - The Python library used to render a GUI for our programs. The library is usually included with Python installs, but you can check via `pip install tk` on Windows or `sudo apt-get install python3-tk` on Ubuntu.
 3. [Argos Translate](https://github.com/argosopentech/argos-translate) - A library for offline language translation in Python. To install, simply run `pip install argostranslate` (more info in linked Repo).
 
@@ -58,7 +57,7 @@ Navigate to the [Python_Obfuscator](https://github.com/BryanFrederickson/CYBER1-
 
 #### Known Problems
 - Currently, `Logic Obfuscation` is disabled as a parameter (set to 0% probability during generation) due to issues with edge cases. Will be enabled once logic obfuscation code has been made robust enough to no longer crash.
-- Currently, there is an issue installing Argos Translate on Python 3.10 or later due to a deprecated dependency, so Python 3.9 - 3.5 is required. Documentation will be updated when issue is fixed.
+- Currently, there is an issue installing Argos Translate on Python 3.10 or later due to a deprecated dependency, so Python 3.9 - 3.5 is required (Python can be updated after). Documentation will be updated when issue is fixed.
 
 
 
