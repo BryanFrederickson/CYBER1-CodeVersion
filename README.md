@@ -48,6 +48,7 @@ Additionally required:
 
 4. [LibCST](https://github.com/Instagram/LibCST) - A library for converting Python source code to and from Concrete Syntax Trees (CSTs). CSTs build on abstract syntax trees by preserving formatting and cosmetic parts of the code, allowing for changes to not disturb the overall program structure. Install via `pip install libcst`.
 5. [Unidecode](https://pypi.org/project/Unidecode/) - Used for transliteration, taking Unicode strings that contain invalid chars for [identifiers](https://docs.python.org/3/reference/lexical_analysis.html#identifiers) and replaces them with their English character equivalent (e.g. "你好" becomes "Ni Hao", "ہیلو!" becomes "hylw!"). Install via `pip install Unidecode`.
+6. [PyInstaller](https://pyinstaller.org/en/stable/index.html) - A python library that bundles a Python application and all of its dependencies. Used to convert output clone .py files to executables. Install via `pip install -U pyinstaller` after installing requirements (see PyInstaller link).
 
 #### Installation and General Use
 Navigate to the [Python_Obfuscator](https://github.com/BryanFrederickson/CYBER1-CodeVersion/tree/65599df46c11487d5cb75023a377683cd6733873/Python_Obfuscator) folder on the Main Branch and download all files inside. Make sure when running any of the Python files that they are all in the same directory on your system.
