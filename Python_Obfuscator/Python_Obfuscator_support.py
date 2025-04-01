@@ -241,10 +241,7 @@ def generate_clones():
                     "snake_case",
                     "SCREAMING_SNAKE_CASE",
                     "camel_Snake_Case",
-                    "Pascal_Snake_Case",
-                    "kebab-case",
-                    "COBOL-CASE",
-                    "Train-Case",
+                    "Pascal_Snake_Case"
                 ]
             )
             write_to_log("RENAMING VARIABLES...")
@@ -271,10 +268,7 @@ def generate_clones():
                     "snake_case",
                     "SCREAMING_SNAKE_CASE",
                     "camel_Snake_Case",
-                    "Pascal_Snake_Case",
-                    "kebab-case",
-                    "COBOL-CASE",
-                    "Train-Case",
+                    "Pascal_Snake_Case"
                 ]
             )
             write_to_log("RENAMING FUNCTIONS...")
@@ -305,9 +299,10 @@ def generate_clones():
             output_file.write(modified_code)
         output_file.close()
         write_to_log("FILE SUCCESSFULLY WRITTEN")
-        print_to_logAll(f"'{current_filename}' generated.\n")
+        print_to_logAll(f"'{current_filename}' generated.")
 
         write_to_log("GENERATING EXECUTABLE...")
+        print_to_logCurr("Generating executable...")
         print_to_logAll("Generating executable...")
         folder_dir = os.path.join(
             params["output_dir"],
@@ -327,10 +322,12 @@ def generate_clones():
                 ]
             )
             write_to_log("EXECUTABLE SUCCESSFULLY GENERATED")
-            print_to_logAll("Executable Generated.")
+            print_to_logCurr("Executable Generated.")
+            print_to_logAll("Executable Generated.\n")
         except Exception as e:
             write_to_log("ERROR GENERATING EXECUTABLE")
-            print_to_logAll("Error generating executable!")
+            print_to_logCurr("Error generating executable!")
+            print_to_logAll("Error generating executable!\n")
 
         stats["curr_logfile"].close()
     _w1.L_generateStatus.configure(text="Generation Complete.")
@@ -731,6 +728,7 @@ def translate_name(input: str, isvar: bool) -> str:
 
 # concats list of object subwords based on a specific naming convention
 # input is string of subwords separated by spaces
+# Python does not support naming conventions involving dashes/hyphens
 def concat_name(input: str, isvar: bool) -> str:
     if isvar:
         name_style = stats["curr_var_namestyle"]
@@ -814,43 +812,6 @@ def concat_name(input: str, isvar: bool) -> str:
             (output in (stats["func_name_pairs"]).values()) or iskeyword(output)
         ):
             output = output + "_" + str(stats["changed_funcs"])
-    # kebab-case
-    elif name_style == "kebab-case":
-        output = output.lower()  # lowercase all
-        output = output.replace(" ", "-")  # replace spaces with underscores
-        if isvar and (
-            (output in (stats["var_name_pairs"]).values()) or iskeyword(output)
-        ):
-            output = output + "-" + str(stats["changed_vars"])
-        elif not isvar and (
-            (output in (stats["func_name_pairs"]).values()) or iskeyword(output)
-        ):
-            output = output + "-" + str(stats["changed_funcs"])
-    # COBOL-CASE
-    elif name_style == "COBOL-CASE":
-        output = output.upper()  # uppercase all
-        output = output.replace(" ", "-")  # replace spaces with underscores
-        if isvar and (
-            (output in (stats["var_name_pairs"]).values()) or iskeyword(output)
-        ):
-            output = output + "-" + str(stats["changed_vars"])
-        elif not isvar and (
-            (output in (stats["func_name_pairs"]).values()) or iskeyword(output)
-        ):
-            output = output + "-" + str(stats["changed_funcs"])
-    # Train-Case
-    elif name_style == "Train-Case":
-        output = output.lower()  # lowercase all
-        output = output.title()  # capitalize each word's first char
-        output = output.replace(" ", "-")  # replace spaces with underscores
-        if isvar and (
-            (output in (stats["var_name_pairs"]).values()) or iskeyword(output)
-        ):
-            output = output + "-" + str(stats["changed_vars"])
-        elif not isvar and (
-            (output in (stats["func_name_pairs"]).values()) or iskeyword(output)
-        ):
-            output = output + "-" + str(stats["changed_funcs"])
 
     # note that flatcase and UPPERCASE styles could be supported, but they are not parseable
     # as input var/func names, so to ensure output code can be reused, they will not be implemented
@@ -860,15 +821,15 @@ def concat_name(input: str, isvar: bool) -> str:
 # splits given var/function name into individual words based on naming conventions
 def split_name(input: str) -> list:
     # Supported Styles: camelCase, PascalCase, snake_case, SCREAMING_SNAKE_CASE, camel_Snake_Case,
-    #                   Pascal_Snake_Case, kebab-case, COBOL-CASE, Train-Case
+    #                   Pascal_Snake_Case
     # Unsupported Styles (would need a more complex parser e.g. python-wordsegment which only supports english): flatcase, UPPERCASE
+    #                   as well as anything involving dashes/hyphens, as Python itself doesn't support it
 
     # if not a single letter
     if not len(input) == 1:
         # code based on: https://www.geeksforgeeks.org/python-split-camelcase-string-to-individual-strings/ (method 5)
-        # first parse for '_' or '-'
-        modified_string = list(map(lambda x: "_" if x == "-" else x, input))
-        split_string = "".join(modified_string).split("_")
+        # first parse for '_'
+        split_string = "".join(input).split("_")
         sep_words = list(filter(lambda x: x != "", split_string))
         # next check split words for any camelCase or PascalCase, avoiding UPPERCASE and single letters
         # number based strings e.g. 13vals also supported
@@ -916,8 +877,7 @@ class VarRename(cst.CSTTransformer):
     ############ Function to generate a new synonym for the existing variable using gemini API ############
 
     def get_synonym(self, original_varname):
-
-        ## Only rename the variable if Gemini has not come up with a synonym for it. Otherwise return the current synonym ##
+        # only generate new name if not already logged
         if original_varname not in stats["var_name_pairs"]:
             stats["total_vars"] = stats["total_vars"] + 1
             time.sleep(0.001)  # in case running too fast
@@ -933,6 +893,15 @@ class VarRename(cst.CSTTransformer):
                 write_to_log(f"Skipped variable: {original_varname}")
             update_VarRatio(stats["changed_vars"], stats["total_vars"])
         return stats["var_name_pairs"][original_varname]
+    
+    # renames variables when subscripted e.g. text="hello", print(text[0])
+    def leave_Subscript(self, original_node: cst.Subscript, updated_node: cst.Subscript) -> cst.Subscript:
+        if (type(updated_node.value)) is cst.Name:
+            new_varname=self.get_synonym(updated_node.value.value)
+            updated_node = updated_node.with_changes(
+                value=updated_node.value.with_changes(value=new_varname)
+            )
+        return updated_node
 
     #######################################################################################################
 
