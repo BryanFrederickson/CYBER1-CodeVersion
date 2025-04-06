@@ -903,12 +903,15 @@ class VarRename(cst.CSTTransformer):
     
     # renames variables when subscripted e.g. text="hello", print(text[0])
     def leave_Subscript(self, original_node: cst.Subscript, updated_node: cst.Subscript) -> cst.Subscript:
-        if (type(updated_node.value)) is cst.Name:
-            new_varname=self.get_synonym(updated_node.value.value)
-            updated_node = updated_node.with_changes(
-                value=updated_node.value.with_changes(value=new_varname)
-            )
-        return updated_node
+        try:
+            if (type(updated_node.value)) is cst.Name:
+                new_varname=self.get_synonym(updated_node.value.value)
+                updated_node = updated_node.with_changes(
+                    value=updated_node.value.with_changes(value=new_varname)
+                )
+            return updated_node
+        except Exception:
+            return updated_node
 
     #######################################################################################################
 
@@ -919,15 +922,17 @@ class VarRename(cst.CSTTransformer):
     def leave_Param(
         self, original_node: cst.Param, updated_node: cst.Param
     ) -> cst.Param:
+        try:
+            if isinstance(updated_node.name, cst.Name):
 
-        if isinstance(updated_node.name, cst.Name):
+                new_varname = self.get_synonym(updated_node.name.value)
+                updated_node = updated_node.with_changes(
+                    name=updated_node.name.with_changes(value=new_varname)
+                )
 
-            new_varname = self.get_synonym(updated_node.name.value)
-            updated_node = updated_node.with_changes(
-                name=updated_node.name.with_changes(value=new_varname)
-            )
-
-        return updated_node
+            return updated_node
+        except Exception:
+            return updated_node
 
     #######################################################################################################
 
@@ -937,42 +942,44 @@ class VarRename(cst.CSTTransformer):
     # (Ex: for variable in variable2:)
 
     def leave_For(self, original_node: cst.For, updated_node: cst.For) -> cst.For:
+        try:
+            if isinstance(updated_node.target, cst.Name):
 
-        if isinstance(updated_node.target, cst.Name):
+                new_varname = self.get_synonym(updated_node.target.value)
+                updated_node = updated_node.with_changes(
+                    target=updated_node.target.with_changes(value=new_varname)
+                )
 
-            new_varname = self.get_synonym(updated_node.target.value)
-            updated_node = updated_node.with_changes(
-                target=updated_node.target.with_changes(value=new_varname)
-            )
+            elif isinstance(updated_node.target, cst.Tuple):
 
-        elif isinstance(updated_node.target, cst.Tuple):
+                updated_tuple = updated_node.target
 
-            updated_tuple = updated_node.target
+                for i, element in enumerate(updated_tuple.elements):
 
-            for i, element in enumerate(updated_tuple.elements):
+                    if isinstance(element.value, cst.Name):
 
-                if isinstance(element.value, cst.Name):
+                        new_varname = self.get_synonym(element.value.value)
+                        new_element = element.with_changes(
+                            value=element.value.with_changes(value=new_varname)
+                        )
+                        updated_tuple = updated_tuple.with_changes(
+                            elements=tuple(updated_tuple.elements[:i])
+                            + (new_element,)
+                            + tuple(updated_tuple.elements[i + 1 :])
+                        )
 
-                    new_varname = self.get_synonym(element.value.value)
-                    new_element = element.with_changes(
-                        value=element.value.with_changes(value=new_varname)
-                    )
-                    updated_tuple = updated_tuple.with_changes(
-                        elements=tuple(updated_tuple.elements[:i])
-                        + (new_element,)
-                        + tuple(updated_tuple.elements[i + 1 :])
-                    )
+                updated_node = updated_node.with_changes(target=updated_tuple)
 
-            updated_node = updated_node.with_changes(target=updated_tuple)
+            if isinstance(updated_node.iter, cst.Name):
 
-        if isinstance(updated_node.iter, cst.Name):
+                new_varname = self.get_synonym(updated_node.iter.value)
+                updated_node = updated_node.with_changes(
+                    iter=updated_node.iter.with_changes(value=new_varname)
+                )
 
-            new_varname = self.get_synonym(updated_node.iter.value)
-            updated_node = updated_node.with_changes(
-                iter=updated_node.iter.with_changes(value=new_varname)
-            )
-
-        return updated_node
+            return updated_node
+        except Exception:
+            return updated_node
 
     #######################################################################################################
 
@@ -983,15 +990,17 @@ class VarRename(cst.CSTTransformer):
     def leave_AssignTarget(
         self, original_node: cst.AssignTarget, updated_node: cst.AssignTarget
     ) -> cst.AssignTarget:
+        try:
+            if isinstance(updated_node.target, cst.Name):
 
-        if isinstance(updated_node.target, cst.Name):
+                new_varname = self.get_synonym(updated_node.target.value)
+                updated_node = updated_node.with_changes(
+                    target=updated_node.target.with_changes(value=new_varname)
+                )
 
-            new_varname = self.get_synonym(updated_node.target.value)
-            updated_node = updated_node.with_changes(
-                target=updated_node.target.with_changes(value=new_varname)
-            )
-
-        return updated_node
+            return updated_node
+        except Exception:
+            return updated_node
 
     #######################################################################################################
 
@@ -1002,27 +1011,29 @@ class VarRename(cst.CSTTransformer):
     def leave_Attribute(
         self, original_node: cst.AssignTarget, updated_node: cst.AssignTarget
     ) -> cst.AssignTarget:
+        try:
+            if (
+                isinstance(updated_node.value, cst.Name)
+                and updated_node.value.value in stats["var_name_pairs"]
+            ):
 
-        if (
-            isinstance(updated_node.value, cst.Name)
-            and updated_node.value.value in stats["var_name_pairs"]
-        ):
+                new_varname = self.get_synonym(updated_node.value.value)
+                return updated_node.with_changes(
+                    value=updated_node.value.with_changes(value=new_varname)
+                )
 
-            new_varname = self.get_synonym(updated_node.value.value)
-            return updated_node.with_changes(
-                value=updated_node.value.with_changes(value=new_varname)
-            )
+            if (
+                isinstance(updated_node.attr, cst.Name)
+                and updated_node.attr.value in stats["var_name_pairs"]
+            ):
+                new_varname = self.get_synonym(updated_node.attr.value)
+                return updated_node.with_changes(
+                    attr=updated_node.attr.with_changes(value=new_varname)
+                )
 
-        if (
-            isinstance(updated_node.attr, cst.Name)
-            and updated_node.attr.value in stats["var_name_pairs"]
-        ):
-            new_varname = self.get_synonym(updated_node.attr.value)
-            return updated_node.with_changes(
-                attr=updated_node.attr.with_changes(value=new_varname)
-            )
-
-        return updated_node
+            return updated_node
+        except Exception:
+            return updated_node
 
     #######################################################################################################
 
@@ -1031,15 +1042,17 @@ class VarRename(cst.CSTTransformer):
     # Context for function:
 
     def leave_Arg(self, original_node: cst.Arg, updated_node: cst.Arg) -> cst.Arg:
+        try:
+            if isinstance(updated_node.value, cst.Name):
 
-        if isinstance(updated_node.value, cst.Name):
+                new_varname = self.get_synonym(updated_node.value.value)
+                return updated_node.with_changes(
+                    value=updated_node.value.with_changes(value=new_varname)
+                )
 
-            new_varname = self.get_synonym(updated_node.value.value)
-            return updated_node.with_changes(
-                value=updated_node.value.with_changes(value=new_varname)
-            )
-
-        return updated_node
+            return updated_node
+        except Exception:
+            return updated_node
 
     #######################################################################################################
 
@@ -1064,22 +1077,24 @@ class VarRename(cst.CSTTransformer):
     def leave_BinaryOperation(
         self, original_node: cst.BinaryOperation, updated_node: cst.BinaryOperation
     ) -> cst.BinaryOperation:
+        try:
+            if isinstance(updated_node.left, cst.Name):
 
-        if isinstance(updated_node.left, cst.Name):
+                new_left_varname = self.get_synonym(updated_node.left.value)
+                updated_node = updated_node.with_changes(
+                    left=updated_node.left.with_changes(value=new_left_varname)
+                )
 
-            new_left_varname = self.get_synonym(updated_node.left.value)
-            updated_node = updated_node.with_changes(
-                left=updated_node.left.with_changes(value=new_left_varname)
-            )
+            if isinstance(updated_node.right, cst.Name):
 
-        if isinstance(updated_node.right, cst.Name):
+                new_right_varname = self.get_synonym(updated_node.right.value)
+                updated_node = updated_node.with_changes(
+                    right=updated_node.right.with_changes(value=new_right_varname)
+                )
 
-            new_right_varname = self.get_synonym(updated_node.right.value)
-            updated_node = updated_node.with_changes(
-                right=updated_node.right.with_changes(value=new_right_varname)
-            )
-
-        return updated_node
+            return updated_node
+        except Exception:
+            return updated_node
 
     #######################################################################################################
 
@@ -1106,15 +1121,17 @@ class VarRename(cst.CSTTransformer):
     def leave_Comparison(
         self, original_node: cst.Comparison, updated_node: cst.Comparison
     ) -> cst.Comparison:
+        try:
+            if isinstance(updated_node.left, cst.Name):
 
-        if isinstance(updated_node.left, cst.Name):
+                new_left_varname = self.get_synonym(updated_node.left.value)
+                updated_node = updated_node.with_changes(
+                    left=updated_node.left.with_changes(value=new_left_varname)
+                )
 
-            new_left_varname = self.get_synonym(updated_node.left.value)
-            updated_node = updated_node.with_changes(
-                left=updated_node.left.with_changes(value=new_left_varname)
-            )
-
-        return updated_node
+            return updated_node
+        except Exception:
+            return updated_node
 
     #######################################################################################################
 
@@ -1125,44 +1142,48 @@ class VarRename(cst.CSTTransformer):
     def leave_Return(
         self, original_node: cst.Return, updated_node: cst.Return
     ) -> cst.Return:
+        try:
+            if isinstance(updated_node.value, cst.Name):
 
-        if isinstance(updated_node.value, cst.Name):
+                new_varname = self.get_synonym(updated_node.value.value)
+                updated_node = updated_node.with_changes(
+                    value=updated_node.value.with_changes(value=new_varname)
+                )
 
-            new_varname = self.get_synonym(updated_node.value.value)
-            updated_node = updated_node.with_changes(
-                value=updated_node.value.with_changes(value=new_varname)
-            )
-
-        return updated_node
+            return updated_node
+        except Exception:
+            return updated_node
 
     #######################################################################################################
 
     def leave_FormattedString(
         self, original_node: cst.FormattedString, updated_node: cst.FormattedString
     ) -> cst.FormattedString:
+        try:
+            new_parts = []
 
-        new_parts = []
+            for part in updated_node.parts:
 
-        for part in updated_node.parts:
+                if isinstance(part, cst.FormattedStringExpression):
 
-            if isinstance(part, cst.FormattedStringExpression):
+                    if isinstance(part.expression, cst.Name):
 
-                if isinstance(part.expression, cst.Name):
+                        new_varname = self.get_synonym(part.expression.value)
+                        new_part = part.with_changes(
+                            expression=part.expression.with_changes(value=new_varname)
+                        )
+                        new_parts.append(new_part)
 
-                    new_varname = self.get_synonym(part.expression.value)
-                    new_part = part.with_changes(
-                        expression=part.expression.with_changes(value=new_varname)
-                    )
-                    new_parts.append(new_part)
+                    else:
 
+                        new_parts.append(part)
                 else:
 
                     new_parts.append(part)
-            else:
 
-                new_parts.append(part)
-
-        return updated_node.with_changes(parts=new_parts)
+            return updated_node.with_changes(parts=new_parts)
+        except Exception:
+            return updated_node
 
     #######################################################################################################
 
@@ -1175,36 +1196,8 @@ class FuncRename(cst.CSTTransformer):
     def leave_FunctionDef(
         self, node: cst.FunctionDef, updated_node: cst.FunctionDef
     ) -> cst.FunctionDef:
-        orig_name = updated_node.name.value
-        if orig_name not in stats["func_name_pairs"]:
-            stats["total_funcs"] = stats["total_funcs"] + 1
-            time.sleep(0.001)  # in case running too fast
-            if random.random() < (float(params["func_percent"]) * 0.01):
-                stats["changed_funcs"] = stats["changed_funcs"] + 1
-                new_name = translate_name(orig_name, False)
-                stats["func_name_pairs"].update({orig_name: new_name})
-
-            else:
-                stats["func_name_pairs"].update({orig_name: orig_name})
-                print_to_logCurr(f"Skipped function def: {orig_name}")
-                write_to_log(f"Skipped function def: {orig_name}")
-        # the name node in function def is a child node, thus to change function name via the FunctionDef parent node, use with_deep_changes via:
-        # (https://libcst.readthedocs.io/en/latest/nodes.html#libcst.CSTNode.with_deep_changes)
-
-        update_FuncRatio(stats["changed_funcs"], stats["total_funcs"])
-        # print("Function def of \'"+updated_node.name.value+"\' has been renamed to \'"+stats['func_name_pairs'][updated_node.name.value]+"\'")
-        return updated_node.with_deep_changes(
-            updated_node.name, value=stats["func_name_pairs"][orig_name]
-        )
-
-    # rename function names in a "import x as y" node
-    # ImportAlias node docs: (https://libcst.readthedocs.io/_/downloads/en/latest/pdf/#page=78&zoom=auto,-205,314)
-    def leave_ImportAlias(
-        self, node: cst.ImportAlias, updated_node: cst.ImportAlias
-    ) -> cst.ImportAlias:
-        alias_node = updated_node.asname
-        if alias_node:
-            orig_name = alias_node.name.value
+        try:
+            orig_name = updated_node.name.value
             if orig_name not in stats["func_name_pairs"]:
                 stats["total_funcs"] = stats["total_funcs"] + 1
                 time.sleep(0.001)  # in case running too fast
@@ -1212,18 +1205,52 @@ class FuncRename(cst.CSTTransformer):
                     stats["changed_funcs"] = stats["changed_funcs"] + 1
                     new_name = translate_name(orig_name, False)
                     stats["func_name_pairs"].update({orig_name: new_name})
+
                 else:
                     stats["func_name_pairs"].update({orig_name: orig_name})
-                    print_to_logCurr(f"Skipped function import: {orig_name}")
-                    write_to_log(f"Skipped function import: {orig_name}")
-            update_FuncRatio(stats["changed_funcs"], stats["total_funcs"])
+                    print_to_logCurr(f"Skipped function def: {orig_name}")
+                    write_to_log(f"Skipped function def: {orig_name}")
+            # the name node in function def is a child node, thus to change function name via the FunctionDef parent node, use with_deep_changes via:
+            # (https://libcst.readthedocs.io/en/latest/nodes.html#libcst.CSTNode.with_deep_changes)
 
-            # print("Import alias of \'"+alias_node.name.value+"\' has been renamed to \'"+stats['func_name_pairs'][alias_node.name.value]+"\'")
+            update_FuncRatio(stats["changed_funcs"], stats["total_funcs"])
+            # print("Function def of \'"+updated_node.name.value+"\' has been renamed to \'"+stats['func_name_pairs'][updated_node.name.value]+"\'")
             return updated_node.with_deep_changes(
-                updated_node.asname.name,
-                value=stats["func_name_pairs"][orig_name],
+                updated_node.name, value=stats["func_name_pairs"][orig_name]
             )
-        return updated_node
+        except Exception:
+            return updated_node
+
+    # rename function names in a "import x as y" node
+    # ImportAlias node docs: (https://libcst.readthedocs.io/_/downloads/en/latest/pdf/#page=78&zoom=auto,-205,314)
+    def leave_ImportAlias(
+        self, node: cst.ImportAlias, updated_node: cst.ImportAlias
+    ) -> cst.ImportAlias:
+        try:
+            alias_node = updated_node.asname
+            if alias_node:
+                orig_name = alias_node.name.value
+                if orig_name not in stats["func_name_pairs"]:
+                    stats["total_funcs"] = stats["total_funcs"] + 1
+                    time.sleep(0.001)  # in case running too fast
+                    if random.random() < (float(params["func_percent"]) * 0.01):
+                        stats["changed_funcs"] = stats["changed_funcs"] + 1
+                        new_name = translate_name(orig_name, False)
+                        stats["func_name_pairs"].update({orig_name: new_name})
+                    else:
+                        stats["func_name_pairs"].update({orig_name: orig_name})
+                        print_to_logCurr(f"Skipped function import: {orig_name}")
+                        write_to_log(f"Skipped function import: {orig_name}")
+                update_FuncRatio(stats["changed_funcs"], stats["total_funcs"])
+
+                # print("Import alias of \'"+alias_node.name.value+"\' has been renamed to \'"+stats['func_name_pairs'][alias_node.name.value]+"\'")
+                return updated_node.with_deep_changes(
+                    updated_node.asname.name,
+                    value=stats["func_name_pairs"][orig_name],
+                )
+            return updated_node
+        except Exception:
+            return updated_node
 
 
 # kept separate from FuncRename to do two-pass and prevent renaming predefined functions like print()
