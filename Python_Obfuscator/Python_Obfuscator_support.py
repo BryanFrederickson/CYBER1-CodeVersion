@@ -18,9 +18,8 @@ from libcst.metadata import (
     ParentNodeProvider,
 )  # for in-depth cst node parsing
 import random  # used for randomly choosing placeholder names
-import re  # for regular expressions
 import string
-from typing_extensions import final
+import base64
 from keyword import iskeyword
 from unidecode import unidecode
 from coding_abbreviations import abbreviations
@@ -100,6 +99,9 @@ def init_params():
         string.punctuation, " " * len(string.punctuation)
     )
 
+    stats["include_base64"]='' # if base64 encoding will be used, change to 
+                               # "import base64" and append to code
+
 
 def main(*args):
     init_params()
@@ -122,7 +124,7 @@ Custom2 = st.ScrolledText
 
 
 def write_to_log(input: str):
-    stats["curr_logfile"].write(f"[{time.strftime("%Y-%m-%d %H:%M:%S")}] {input}\n")
+    stats["curr_logfile"].write(f"[{time.strftime('%Y-%m-%d %H:%M:%S')}] {input}\n")
     stats["curr_logfile"].flush()  # immediately save to file in case of crash
 
 
@@ -283,12 +285,14 @@ def generate_clones():
                 f"Functions Renamed: {stats['changed_funcs']}/{stats['total_funcs']}"
             )
 
-            write_to_log("RENAMING FUNCTION CALLS...")
-            wrapped_module = wrapped_module.visit(CallRename())
-            print_to_logCurr("Function calls renamed...")
-            write_to_log("Function calls renamed...")
+            if stats["changed_funcs"]!=0:
+                write_to_log("RENAMING FUNCTION CALLS...")
+                wrapped_module = wrapped_module.visit(CallRename())
+                print_to_logCurr("Function calls renamed...")
+                write_to_log("Function calls renamed...")
 
         modified_code = wrapped_module.code
+        modified_code=str(stats["include_base64"]+modified_code)
         # [:-3] removes .py extension
         current_filename = str(f"{params['input_filename'][:-3]}_Obf{clone_num+1}.py")
         filepath = os.path.join(params["output_dir"], current_filename)
@@ -301,6 +305,7 @@ def generate_clones():
         write_to_log("FILE SUCCESSFULLY WRITTEN")
         print_to_logAll(f"'{current_filename}' generated.")
 
+        
         write_to_log("GENERATING EXECUTABLE...")
         print_to_logCurr("Generating executable...")
         print_to_logAll("Generating executable...")
@@ -328,7 +333,7 @@ def generate_clones():
             write_to_log("ERROR GENERATING EXECUTABLE")
             print_to_logCurr("Error generating executable!")
             print_to_logAll("Error generating executable!\n")
-
+        
         stats["curr_logfile"].close()
     _w1.L_generateStatus.configure(text="Generation Complete.")
 
@@ -894,6 +899,8 @@ class VarRename(cst.CSTTransformer):
             update_VarRatio(stats["changed_vars"], stats["total_vars"])
         return stats["var_name_pairs"][original_varname]
     
+
+    
     # renames variables when subscripted e.g. text="hello", print(text[0])
     def leave_Subscript(self, original_node: cst.Subscript, updated_node: cst.Subscript) -> cst.Subscript:
         if (type(updated_node.value)) is cst.Name:
@@ -1228,26 +1235,32 @@ class CallRename(cst.CSTTransformer):
 
         # Name node: (https://libcst.readthedocs.io/_/downloads/en/latest/pdf/#page=48&zoom=auto,-205,344)
         if (type(updated_node.func)) is cst._nodes.expression.Name:
-            if (updated_node.func.value) in stats["func_name_pairs"]:
+            try:
+                if (updated_node.func.value) in stats["func_name_pairs"]:
 
-                # print("Function call of \'"+updated_node.func.value+"\' has been renamed to \'"+stats['func_name_pairs'][updated_node.func.value]+"\'")
-                return updated_node.with_deep_changes(
-                    updated_node.func,
-                    value=stats["func_name_pairs"][updated_node.func.value],
-                )
+                    # print("Function call of \'"+updated_node.func.value+"\' has been renamed to \'"+stats['func_name_pairs'][updated_node.func.value]+"\'")
+                    return updated_node.with_deep_changes(
+                        updated_node.func,
+                        value=stats["func_name_pairs"][updated_node.func.value],
+                    )
+            except Exception:
+                return updated_node
 
         # for attributes, aka package.function(), only the package can be potentially custom (e.g. 'import math as blah', 'blah.log()')
         # as if you import a subsect and rename it, it will be a normal function call (e.g. 'from math import log as blah', funct call would be
         #                                                                                   'blah()' not 'math.blah()'
         # Attribute node: (https://libcst.readthedocs.io/_/downloads/en/latest/pdf/#page=48&zoom=auto,-205,344)
         elif (type(updated_node.func)) is cst._nodes.expression.Attribute:
-            if updated_node.func.value.value in stats["func_name_pairs"]:
+            try:
+                if updated_node.func.value.value in stats["func_name_pairs"]:
 
-                # print("Function call of \'"+updated_node.func.value.value+"."+updated_node.func.attr.value+"\' has been renamed to \'"+stats['func_name_pairs'][updated_node.func.value.value]+"."+updated_node.func.attr.value+"\'")
-                return updated_node.with_deep_changes(
-                    updated_node.func.value,
-                    value=stats["func_name_pairs"][updated_node.func.value.value],
-                )
+                    # print("Function call of \'"+updated_node.func.value.value+"."+updated_node.func.attr.value+"\' has been renamed to \'"+stats['func_name_pairs'][updated_node.func.value.value]+"."+updated_node.func.attr.value+"\'")
+                    return updated_node.with_deep_changes(
+                        updated_node.func.value,
+                        value=stats["func_name_pairs"][updated_node.func.value.value],
+                    )
+            except Exception:
+                return updated_node
         return updated_node
 
 
@@ -1257,6 +1270,34 @@ class LogicRenamer(cst.CSTTransformer):
     METADATA_DEPENDENCIES = (
         ParentNodeProvider,
     )  # Allow access to parent node attributes # #
+
+    # encodes simple strings using base64 and adds decoding functionality to the source code
+    def leave_SimpleString(self, original_node: cst.SimpleString, updated_node: cst.SimpleString):
+        try:
+            # if doesn't already have prefix [r, u, b, br or rb]
+            if not original_node.prefix:
+                time.sleep(0.001)  # in case running too fast
+                stats["total_logic"] = stats["total_logic"] + 1
+                if random.random() <= (float(params["logic_percent"]) * 0.01):
+                    origstring=original_node.evaluated_value
+                    encodestring=base64.b64encode(origstring.encode('utf-8'))
+                    outputcode=f"base64.b64decode({encodestring}).decode('utf-8')"
+                    stats["include_base64"]="import base64\n"
+                    output_node=cst.parse_expression(outputcode)
+                    if len(encodestring) > 16:
+                        print_to_logCurr(f"Encoded string: {repr(origstring)} -> {encodestring[:16]+('...').encode('utf-8')}")
+                        write_to_log(f"Encoded string: {repr(origstring)} -> {encodestring[:16]+('...').encode('utf-8')}")
+                    else:
+                        print_to_logCurr(f"Encoded string: {repr(origstring)} -> {encodestring}")
+                        write_to_log(f"Encoded string: {repr(origstring)} -> {encodestring}")
+                    stats["changed_logic"] = stats["changed_logic"] + 1
+                    update_LogicRatio(stats["changed_logic"], stats["total_logic"])
+                    return output_node
+                
+            update_LogicRatio(stats["changed_logic"], stats["total_logic"])
+            return updated_node
+        except Exception as e:
+            return updated_node
 
     def leave_While(
         self, original_node: cst.While, updated_node: cst.While
