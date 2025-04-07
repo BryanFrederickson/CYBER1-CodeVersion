@@ -57,7 +57,6 @@ Navigate to the [Python_Obfuscator](https://github.com/BryanFrederickson/CYBER1-
 - `coding_abbreviations.py` - This file contains common abbreviations in variable or function names e.g. mem -> memory. This dictionary is used to convert variable substring abbreviations to a corresponding full term for accurate language translation. Common abbreviations list from the [`Abbreviations in code`](https://github.com/abbrcode/abbreviations-in-code) repository.
 
 #### Known Problems
-- Currently, `Logic Obfuscation` is disabled as a parameter (set to 0% probability during generation) due to issues with edge cases. Will be enabled once logic obfuscation code has been made robust enough to no longer crash.
 - Currently, there is an issue installing Argos Translate on Python 3.10 or later due to a deprecated dependency, so Python 3.9 - 3.5 is required (Python can be updated after). Documentation will be updated when issue is fixed.
 
 
