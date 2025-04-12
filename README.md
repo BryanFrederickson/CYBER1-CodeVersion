@@ -18,6 +18,9 @@ Users will primarily interact with the Argos Translate Language Installer and Py
 
 ## 1. Argos Translate Language Installer
 This program is made to help install specific offline translation packages from Argos Translate for use in Variable and Function Obfuscation.
+<p align="center">
+  <img width="350" src="https://github.com/BryanFrederickson/CYBER1-CodeVersion/blob/64b353a777293b9d77aaec81dcb71667d5386942/Resources/LangsInstaller_Params_Valid.png" alt="Argos Translate Language Installer GUI, with some languages selected for install.">
+</p>
 
 #### Prerequisites
 These instructions are written primarily for modern Windows. For installing prerqs on Windows, run Command Prompt as administrator.
@@ -33,8 +36,13 @@ Navigate to the [`Langs_Installer`](https://github.com/BryanFrederickson/CYBER1-
 - 
 #### Known Problems
 - Currently, there is an issue installing Argos Translate on Python 3.10 or later due to a deprecated dependency, so Python 3.9 - 3.5 is required when installing Argos Translate (Python can be updated after). Documentation will be updated when issue is fixed.
+
+
 ## 2. Python Obfuscator
 This program allows for automated generation of obfuscated semantic clones. A selected input Python source code file will be obfuscated, where variables/functions are translated to other languages and logic loops are changed, while still being functional.
+<p align="center">
+  <img width="500" src="https://github.com/BryanFrederickson/CYBER1-CodeVersion/blob/64b353a777293b9d77aaec81dcb71667d5386942/Resources/Obfuscator_Params_Valid.png" alt="Python Obfuscator GUI, with example parameters selected and validated.">
+</p>
 
 #### Prerequisites
 These instructions are written primarily for modern Windows. For installing prerqs on Windows, run Command Prompt as administrator.
