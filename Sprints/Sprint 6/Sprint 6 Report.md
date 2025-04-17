@@ -1,6 +1,6 @@
 # Sprint 6 Report (3/18/2025 - 4/10/2025)
 
-TODO: Sprint 6 Demo Video
+[Sprint 6 Video](https://www.youtube.com/watch?v=Jm5sc__DUwI)
 
 ## What's New (User Facing)
 * The [Python Obfuscator](https://github.com/BryanFrederickson/CYBER1-CodeVersion?tab=readme-ov-file#python-obfuscator) is finished, with all of the major issues fixed. There are still edgecases that aren't properly covered such as specific implementations of variables, but would require extensive work to cover reliably.
