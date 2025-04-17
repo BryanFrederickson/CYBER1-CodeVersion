@@ -48,9 +48,11 @@ Please review the following code files, which were actively developed during thi
 
 ## Retrospective Summary
 Here's what went well:
-  * TODO
+  * Communication and teamwork, where we would change our current work based on what the other teammate was doing/struggling with.
  
 Here's what we'd like to improve:
-   * TODO
+  * Clearly lay out the various use cases for variables/functions/component to change, instead of adding edge cases as we encounter them
+  * More robust testing, where we use random Python code rather than specifically crafted test cases
+
   
 Note: There is no listing for changes to implement next sprint, as this was the final sprint for the project.
